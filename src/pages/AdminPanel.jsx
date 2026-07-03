@@ -54,6 +54,31 @@ export default function AdminPanel() {
     }
   };
 
+  const runGrafo = async () => {
+    setLogs([]);
+    setResumen(null);
+    setError(null);
+    setRunning(true);
+
+    try {
+      await axios.post(`${API}/run-grafo`, {}, { headers: authHeader() });
+    } catch (e) {
+      setError(e.response?.data?.detail || "Error al iniciar la migración del grafo.");
+      setRunning(false);
+      return;
+    }
+
+    const es = new EventSource(`${API}/logs`);
+    es.onmessage = (e) => {
+      const data = JSON.parse(e.data);
+      if (data.type === "ping") return;
+      if (data.type === "done") { es.close(); setRunning(false); return; }
+      if (data.type === "error") { setError(data.message); es.close(); setRunning(false); return; }
+      if (data.type === "log") appendLog(data.message);
+    };
+    es.onerror = () => { es.close(); setRunning(false); };
+  };
+
   const runPipeline = async () => {
     setLogs([]);
     setResumen(null);
@@ -146,6 +171,20 @@ export default function AdminPanel() {
             ))}
           </ul>
         )}
+      </div>
+
+      <div className="controls" style={{ marginTop: "12px" }}>
+        <button
+          className="btn"
+          style={{ background: "#1e3a5f", color: "#7dd3fc", border: "1px solid #2563eb" }}
+          onClick={runGrafo}
+          disabled={running}
+        >
+          {running ? "Procesando..." : "Regenerar grafo de temas"}
+        </button>
+        <span style={{ fontSize: "0.78rem", color: "#64748b", alignSelf: "center" }}>
+          Migra Neo4j a 228 nodos sin re-procesar PDFs
+        </span>
       </div>
 
       {pdfs.length > 0 && (

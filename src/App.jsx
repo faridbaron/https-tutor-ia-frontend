@@ -5,6 +5,9 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Diagnostico from "./pages/Diagnostico";
+import Ruta from "./pages/Ruta";
+import Tutor from "./pages/Tutor";
+import TemaEstudio from "./pages/TemaEstudio";
 
 export default function App() {
   return (
@@ -27,6 +30,30 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Diagnostico />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/ruta"
+            element={
+              <ProtectedRoute>
+                <Ruta />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/estudio/:nodeId"
+            element={
+              <ProtectedRoute>
+                <TemaEstudio />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/tutor/:nodeId"
+            element={
+              <ProtectedRoute>
+                <Tutor />
               </ProtectedRoute>
             }
           />

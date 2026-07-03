@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { API } from "../config";
+import LogicMindMark from "../components/LogicMindMark";
 import "../auth.css";
 
 const NIVEL_COLOR = { BASICO: "#10b981", MEDIO: "#f59e0b", ALTO: "#6366f1" };
@@ -147,6 +148,25 @@ function PipelineSection({ authHeader }) {
     }
   };
 
+  const runGrafo = async () => {
+    setLogs([]); setResumen(null); setError(null); setRunning(true);
+    try {
+      await axios.post(`${API}/run-grafo`, {}, { headers: authHeader() });
+    } catch (e) {
+      setError(e.response?.data?.detail || "Error al iniciar la migración del grafo.");
+      setRunning(false); return;
+    }
+    const es = new EventSource(`${API}/logs`);
+    es.onmessage = (e) => {
+      const d = JSON.parse(e.data);
+      if (d.type === "ping")  return;
+      if (d.type === "done")  { es.close(); setRunning(false); return; }
+      if (d.type === "error") { setError(d.message); es.close(); setRunning(false); return; }
+      if (d.type === "log")   appendLog(d.message);
+    };
+    es.onerror = () => { es.close(); setRunning(false); };
+  };
+
   const runPipeline = async () => {
     setLogs([]); setResumen(null); setError(null); setRunning(true);
     try {
@@ -172,6 +192,21 @@ function PipelineSection({ authHeader }) {
       <div className="dash-welcome">
         <h2>Ingesta de Documentos</h2>
         <p className="dash-welcome-sub">Carga los libros PDF para procesarlos e indexarlos en el tutor</p>
+      </div>
+
+      {/* Regenerar grafo */}
+      <div className="pipe-controls" style={{ marginBottom: "16px" }}>
+        <button
+          className="auth-btn"
+          style={{ background: "#1e3a5f", color: "#7dd3fc", border: "1px solid #2563eb", marginTop: 0 }}
+          onClick={runGrafo}
+          disabled={running}
+        >
+          {running ? "Procesando..." : "Regenerar grafo de temas"}
+        </button>
+        <span style={{ fontSize: "0.78rem", color: "#64748b", alignSelf: "center" }}>
+          Migra Neo4j a 228 nodos sin re-procesar PDFs
+        </span>
       </div>
 
       {/* Dropzone */}
@@ -304,7 +339,16 @@ const UNIDADES_INFO = [
   },
 ];
 
-function DiagnosticoSection({ navigate }) {
+function DiagnosticoSection({ navigate, authHeader }) {
+  const [progreso, setProgreso] = useState(null);
+
+  useEffect(() => {
+    axios
+      .get(`${API}/ruta/progreso-completo`, { headers: authHeader() })
+      .then(({ data }) => setProgreso(data.unidades))
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="section-content">
       <div className="dash-welcome">
@@ -313,96 +357,125 @@ function DiagnosticoSection({ navigate }) {
           Evaluaciones de 12–20 preguntas adaptativas con algoritmo BKT
         </p>
       </div>
-      {UNIDADES_INFO.map((u) => (
-        <div key={u.id} className="dash-info-card" style={{ borderColor: "#c4b5fd" }}>
-          <h3>🧠 {u.titulo}</h3>
-          <p>{u.descripcion}</p>
-          <p style={{ fontSize: "0.85rem", color: "#6b7280" }}>
-            {u.kcs} dominios · 12–{u.kcs * 4} preguntas adaptativas
-          </p>
-          <button
-            className="auth-btn"
-            style={{ marginTop: 8 }}
-            onClick={() => navigate(`/diagnostico/${u.id}`)}
-          >
-            Ir a la evaluación →
-          </button>
-        </div>
-      ))}
+      {UNIDADES_INFO.map((u, i) => {
+        const p = progreso?.[i];
+        const pct = p && p.total_nodos > 0 ? Math.round((p.nodos_dominados / p.total_nodos) * 100) : 0;
+        return (
+          <div key={u.id} className="dash-info-card" style={{ borderColor: "#c4b5fd" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <h3 style={{ margin: 0 }}>🧠 {u.titulo}</h3>
+              {p && (
+                <span style={{
+                  fontSize: "0.78rem", fontWeight: 700, padding: "0.2rem 0.6rem",
+                  borderRadius: 999, background: "#ede9fe", color: "#6366f1",
+                }}>
+                  {p.nivel_diagnostico}
+                </span>
+              )}
+            </div>
+            <p style={{ marginBottom: 8 }}>{u.descripcion}</p>
+            <p style={{ fontSize: "0.85rem", color: "#6b7280", marginBottom: p ? 10 : 0 }}>
+              {u.kcs} dominios · 12–{u.kcs * 4} preguntas adaptativas
+            </p>
+            {p && (
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem", color: "#6b7280", marginBottom: 4 }}>
+                  <span>Progreso en la ruta</span>
+                  <span>{p.nodos_dominados}/{p.total_nodos} nodos · {pct}%</span>
+                </div>
+                <div style={{ background: "#e5e7eb", borderRadius: 999, height: 6, overflow: "hidden" }}>
+                  <div style={{ width: `${pct}%`, background: "#10b981", height: "100%", borderRadius: 999, transition: "width 0.4s" }} />
+                </div>
+              </div>
+            )}
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              <button
+                className="auth-btn"
+                style={{ marginTop: 0, flex: 1 }}
+                onClick={() => navigate(`/diagnostico/${u.id}`)}
+              >
+                Ir a la evaluación →
+              </button>
+              <button
+                style={{
+                  marginTop: 0, flex: 1, padding: "0.6rem",
+                  background: "#ede9fe", color: "#6366f1", border: "none",
+                  borderRadius: 10, fontWeight: 700, cursor: "pointer", fontSize: "0.9rem",
+                }}
+                onClick={() => navigate("/ruta")}
+              >
+                Ver ruta →
+              </button>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
 
 /* ── Dashboard principal ───────────────────────────────────── */
 const MENU = [
-  { id: "home",        icon: "🏠", label: "Inicio",                  roles: ["ADMIN","ESTUDIANTE","PROFESOR"] },
-  { id: "diagnostico", icon: "🧠", label: "Diagnóstico",             roles: ["ESTUDIANTE","PROFESOR"] },
-  { id: "ingesta",     icon: "📄", label: "Ingesta de documentos",   roles: ["ADMIN"] },
+  { id: "home",        label: "Inicio",                roles: ["ADMIN","ESTUDIANTE","PROFESOR"] },
+  { id: "diagnostico", label: "Diagnóstico",           roles: ["ESTUDIANTE","PROFESOR"] },
+  { id: "ruta",        label: "Ruta de aprendizaje",   roles: ["ESTUDIANTE","PROFESOR"] },
+  { id: "ingesta",     label: "Ingesta de documentos", roles: ["ADMIN"] },
 ];
 
 export default function Dashboard() {
   const { user, logout, authHeader } = useAuth();
-  const navigate  = useNavigate();
-  const [section, setSection]       = useState("home");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const navigate = useNavigate();
+  const [section, setSection] = useState("home");
 
   const handleLogout = () => { logout(); navigate("/login"); };
 
   const visibleMenu = MENU.filter((m) => m.roles.includes(user.rol));
+
+  const initials = user.nombre
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
     <div className="dash-root">
       {/* ── Header ── */}
       <header className="dash-header">
         <div className="dash-brand">
-          <span>🧠</span>
-          <span className="dash-brand-name">Tutor Inteligente</span>
+          <LogicMindMark size="sm" />
+          <span className="dash-brand-name">LogicMind</span>
         </div>
         <div className="dash-header-right">
           <span className={`role-badge role-${user.rol.toLowerCase()}`}>
             {ROL_LABEL[user.rol]}
           </span>
           <span className="dash-username">@{user.username}</span>
+          <div className="dash-avatar" title={user.nombre}>{initials}</div>
           <button className="btn-ghost" onClick={handleLogout}>Cerrar sesión</button>
         </div>
       </header>
 
-      {/* ── Body: contenido + sidebar derecho ── */}
-      <div className="dash-body">
+      {/* ── Tab navigation ── */}
+      <nav className="dash-tabs">
+        {visibleMenu.map((item) => (
+          <button
+            key={item.id}
+            className={`dash-tab ${section === item.id ? "dash-tab-active" : ""}`}
+            onClick={() => item.id === "ruta" ? navigate("/ruta") : setSection(item.id)}
+          >
+            {item.label}
+          </button>
+        ))}
+      </nav>
 
-        {/* Contenido principal */}
+      {/* ── Contenido principal ── */}
+      <div className="dash-body">
         <div className="dash-content">
           {section === "home"        && <HomeSection user={user} authHeader={authHeader} />}
-          {section === "diagnostico" && <DiagnosticoSection navigate={navigate} />}
+          {section === "diagnostico" && <DiagnosticoSection navigate={navigate} authHeader={authHeader} />}
           {section === "ingesta"     && <PipelineSection authHeader={authHeader} />}
         </div>
-
-        {/* Sidebar derecho desplegable */}
-        <aside className={`dash-sidebar ${sidebarOpen ? "sidebar-open" : "sidebar-closed"}`}>
-          {/* Botón toggle */}
-          <button
-            className="sidebar-toggle"
-            onClick={() => setSidebarOpen((o) => !o)}
-            title={sidebarOpen ? "Colapsar menú" : "Expandir menú"}
-          >
-            {sidebarOpen ? "›" : "‹"}
-          </button>
-
-          {/* Items del menú */}
-          <nav className="sidebar-nav">
-            {visibleMenu.map((item) => (
-              <button
-                key={item.id}
-                className={`sidebar-item ${section === item.id ? "sidebar-item-active" : ""}`}
-                onClick={() => { setSection(item.id); }}
-                title={item.label}
-              >
-                <span className="sidebar-icon">{item.icon}</span>
-                {sidebarOpen && <span className="sidebar-label">{item.label}</span>}
-              </button>
-            ))}
-          </nav>
-        </aside>
       </div>
     </div>
   );

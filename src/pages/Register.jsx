@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import LogicMindMark from "../components/LogicMindMark";
 import "../auth.css";
 
 export default function Register() {
@@ -42,9 +43,9 @@ export default function Register() {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-logo">
-          <span className="auth-logo-icon">🧠</span>
-          <h1 className="auth-title">Tutor Inteligente</h1>
-          <p className="auth-subtitle">Lógica y Pensamiento Computacional</p>
+          <LogicMindMark size="sm" />
+          <h1 className="auth-title">LogicMind</h1>
+          <p className="auth-subtitle">Tutor inteligente de lógica computacional</p>
         </div>
 
         <h2 className="auth-heading">Crear cuenta</h2>
