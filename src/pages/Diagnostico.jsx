@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { API } from "../config";
+import Icon from "../components/Icon";
 import "../auth.css";
 
 const KC_NOMBRES = {
@@ -39,28 +40,29 @@ function PantallaIntro({ onIniciar, cargando, sesionActiva, onReanudar, unidadNo
     <div className="diag-page">
       <div className="diag-card">
         <div className="diag-card-header">
-          <span className="diag-icon">🧠</span>
+          <span className="diag-icon"><Icon name="node" size={38} style={{ color: "var(--accent)" }} /></span>
           <h1 className="diag-title">Evaluación Diagnóstica</h1>
           <p className="diag-subtitle">{unidadNombre}</p>
         </div>
 
         <div className="diag-intro-lista">
           <div className="diag-intro-item">
-            <span className="diag-intro-bullet">📝</span>
+            <span className="diag-intro-bullet"><Icon name="list" size={18} /></span>
             <span>Entre 12 y 20 preguntas adaptativas según tu nivel</span>
           </div>
           <div className="diag-intro-item">
-            <span className="diag-intro-bullet">🎯</span>
+            <span className="diag-intro-bullet"><Icon name="target" size={18} /></span>
             <span>El sistema ajusta la dificultad según tus respuestas</span>
           </div>
           <div className="diag-intro-item">
-            <span className="diag-intro-bullet">📊</span>
+            <span className="diag-intro-bullet"><Icon name="barChart" size={18} /></span>
             <span>Al finalizar sabrás tu nivel en 4 dominios del pensamiento computacional</span>
           </div>
         </div>
 
-        <div className="diag-advertencia">
-          ⚠️ <strong>Una vez iniciada no puedes pausar la evaluación.</strong> Asegúrate de tener tiempo suficiente.
+        <div className="diag-advertencia" style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+          <Icon name="alertTriangle" size={17} style={{ marginTop: 2 }} />
+          <span><strong>Una vez iniciada no puedes pausar la evaluación.</strong> Asegúrate de tener tiempo suficiente.</span>
         </div>
 
         {sesionActiva && (
@@ -177,8 +179,9 @@ function TarjetaPregunta({ pregunta, progreso, onResponder, cargando }) {
         {/* Feedback post-confirmación */}
         {confirmada && resultado && (
           <div className={`diag-feedback ${resultado.correcto ? "diag-feedback-ok" : "diag-feedback-mal"}`}>
-            <div className="diag-feedback-titulo">
-              {resultado.correcto ? "✅ ¡Correcto!" : "❌ Incorrecto"}
+            <div className="diag-feedback-titulo" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Icon name={resultado.correcto ? "checkCircle" : "xCircle"} size={18} />
+              {resultado.correcto ? "¡Correcto!" : "Incorrecto"}
             </div>
             <p className="diag-feedback-exp">{resultado.explicacion}</p>
             <div className="diag-p-barra-wrap">
@@ -227,8 +230,8 @@ function PantallaResultado({ resultado, onDashboard }) {
     <div className="diag-page">
       <div className="diag-card">
         <div className="diag-resultado-header" style={{ background: NIVEL_BG[nivel] }}>
-          <div className="diag-resultado-icon">
-            {nivel === "ALTO" ? "🏆" : nivel === "MEDIO" ? "⭐" : "📚"}
+          <div className="diag-resultado-icon" style={{ color: NIVEL_COLOR[nivel] }}>
+            <Icon name={nivel === "ALTO" ? "trophy" : nivel === "MEDIO" ? "star" : "book"} size={38} />
           </div>
           <h2 className="diag-resultado-titulo">¡Evaluación completada!</h2>
           <div
@@ -241,9 +244,13 @@ function PantallaResultado({ resultado, onDashboard }) {
         </div>
 
         <div className="diag-resultado-meta">
-          <span>📝 {resultado.total_preguntas} preguntas respondidas</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <Icon name="list" size={15} /> {resultado.total_preguntas} preguntas respondidas
+          </span>
           {resultado.tiempo_minutos && (
-            <span>⏱️ {resultado.tiempo_minutos} minutos</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <Icon name="clock" size={15} /> {resultado.tiempo_minutos} minutos
+            </span>
           )}
         </div>
 

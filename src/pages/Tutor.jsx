@@ -3,16 +3,19 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { API } from "../config";
+import Icon from "../components/Icon";
+import Markdown from "../components/Markdown";
+import "../auth.css";
 
 // ── styles ────────────────────────────────────────────────────────────────────
 
 const BURBUJA_STYLE = {
-  inicial:     { bg: "#f1f5f9", border: "#e2e8f0", icon: null },
-  correcto:    { bg: "#d1fae5", border: "#6ee7b7", icon: "✓" },
-  no_entiende: { bg: "#fef9c3", border: "#fde68a", icon: "💡" },
-  error_comun: { bg: "#fee2e2", border: "#fca5a5", icon: "⚠️" },
-  pregunta:    { bg: "#f1f5f9", border: "#e2e8f0", icon: null },
-  prereq:      { bg: "#fff7ed", border: "#fdba74", icon: "🔒" },
+  inicial:     { cls: "inicial",     icon: null },
+  correcto:    { cls: "correcto",    icon: "checkCircle" },
+  no_entiende: { cls: "no_entiende", icon: "bulb" },
+  error_comun: { cls: "error_comun", icon: "alertTriangle" },
+  pregunta:    { cls: "pregunta",    icon: null },
+  prereq:      { cls: "prereq",      icon: "lock" },
 };
 
 function BurbujaTutor({ msg }) {
@@ -22,31 +25,16 @@ function BurbujaTutor({ msg }) {
   if (esUsuario) {
     return (
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
-        <div style={{
-          maxWidth: "72%", background: "#6366f1", color: "#fff",
-          borderRadius: "18px 18px 4px 18px",
-          padding: "0.65rem 1rem", fontSize: "0.9rem", lineHeight: 1.5,
-        }}>
-          {msg.contenido}
-        </div>
+        <div className="tutor-burbuja user">{msg.contenido}</div>
       </div>
     );
   }
 
   return (
     <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 12 }}>
-      <div style={{
-        maxWidth: "82%",
-        background: estilo.bg,
-        border: `1px solid ${estilo.border}`,
-        borderRadius: "18px 18px 18px 4px",
-        padding: "0.65rem 1rem", fontSize: "0.9rem", lineHeight: 1.6,
-        whiteSpace: "pre-wrap",
-      }}>
-        {estilo.icon && (
-          <span style={{ marginRight: 6, fontSize: "1rem" }}>{estilo.icon}</span>
-        )}
-        {msg.contenido}
+      <div className={`tutor-burbuja ${estilo.cls}`}>
+        {estilo.icon && <Icon name={estilo.icon} size={15} style={{ marginRight: 6 }} />}
+        <Markdown style={{ display: "inline" }}>{msg.contenido}</Markdown>
       </div>
     </div>
   );
@@ -54,19 +42,15 @@ function BurbujaTutor({ msg }) {
 
 function BarraDominio({ p }) {
   const pct = Math.round(p * 100);
-  const color = p >= 0.75 ? "#10b981" : p >= 0.4 ? "#f59e0b" : "#6366f1";
+  const color = p >= 0.75 ? "var(--accent-2)" : p >= 0.4 ? "#F59E0B" : "var(--accent)";
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-        <span style={{ fontSize: "0.82rem", color: "#6b7280" }}>Dominio del tema</span>
-        <span style={{ fontSize: "0.82rem", fontWeight: 700, color }}>{pct}%</span>
+        <span className="tutor-dominio-label">Dominio del tema</span>
+        <span className="tutor-dominio-pct" style={{ color }}>{pct}%</span>
       </div>
-      <div style={{ background: "#e5e7eb", borderRadius: 999, height: 8, overflow: "hidden" }}>
-        <div style={{
-          width: `${pct}%`, background: color,
-          height: "100%", borderRadius: 999,
-          transition: "width 0.6s ease, background 0.3s",
-        }} />
+      <div className="tutor-dominio-track">
+        <div className="tutor-dominio-fill" style={{ width: `${pct}%`, background: color }} />
       </div>
     </div>
   );
@@ -74,49 +58,20 @@ function BarraDominio({ p }) {
 
 function Celebracion({ nombreTema, siguienteId, onSiguiente, onCerrar }) {
   return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 3000,
-      background: "rgba(16,185,129,0.18)",
-      display: "flex", alignItems: "center", justifyContent: "center",
-    }}>
-      <div style={{
-        background: "#fff", borderRadius: 20, padding: "2.5rem 2rem",
-        textAlign: "center", maxWidth: 400, width: "90%",
-        boxShadow: "0 24px 60px rgba(0,0,0,.18)",
-        animation: "pop 0.35s cubic-bezier(.34,1.56,.64,1)",
-      }}>
-        <div style={{ fontSize: "3.5rem", marginBottom: "0.5rem" }}>🎉</div>
-        <h2 style={{ margin: "0 0 0.4rem", color: "#059669", fontSize: "1.4rem" }}>
-          ¡Dominaste este tema!
-        </h2>
-        <p style={{ color: "#6b7280", margin: "0 0 1.5rem", fontSize: "0.9rem" }}>
+    <div className="tutor-celebra-overlay">
+      <div className="tutor-celebra-card">
+        <div className="tutor-celebra-icon">
+          <Icon name="trophy" size={56} />
+        </div>
+        <h2 className="tutor-celebra-titulo">¡Dominaste este tema!</h2>
+        <p className="tutor-celebra-msg">
           <strong>{nombreTema}</strong> — alcanzaste 75% de dominio.
         </p>
         {siguienteId ? (
-          <button
-            onClick={onSiguiente}
-            style={{
-              width: "100%", padding: "0.75rem",
-              background: "#6366f1", color: "#fff", border: "none",
-              borderRadius: 10, fontWeight: 700, cursor: "pointer",
-              fontSize: "1rem", marginBottom: "0.6rem",
-            }}
-          >
-            Siguiente tema →
-          </button>
+          <button className="tutor-celebra-btn-sig" onClick={onSiguiente}>Siguiente tema →</button>
         ) : null}
-        <button
-          onClick={onCerrar}
-          style={{
-            width: "100%", padding: "0.65rem",
-            background: "#f1f5f9", color: "#374151", border: "none",
-            borderRadius: 10, fontWeight: 600, cursor: "pointer", fontSize: "0.9rem",
-          }}
-        >
-          Volver a la ruta
-        </button>
+        <button className="tutor-celebra-btn-cerrar" onClick={onCerrar}>Volver a la ruta</button>
       </div>
-      <style>{`@keyframes pop { from { transform: scale(.7); opacity:0 } to { transform: scale(1); opacity:1 } }`}</style>
     </div>
   );
 }
@@ -235,51 +190,30 @@ export default function Tutor() {
   const chunkEjercicio = contexto?.chunks?.find(c => c.tipo === "enunciado");
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f8fafc", display: "flex", flexDirection: "column" }}>
+    <div className="tutor-page">
       {/* Header */}
-      <header style={{
-        background: "#fff", borderBottom: "1px solid #e2e8f0",
-        padding: "0.75rem 1.5rem", display: "flex", alignItems: "center", gap: "1rem",
-        position: "sticky", top: 0, zIndex: 100,
-      }}>
-        <button
-          onClick={() => navigate("/ruta")}
-          style={{ background: "none", border: "none", cursor: "pointer", fontSize: "1.3rem", color: "#6366f1" }}
-        >←</button>
-        <span style={{ fontWeight: 700, color: "#1e293b", fontSize: "1rem" }}>
-          {contexto?.nombre || nodeId}
-        </span>
-        {dominado && (
-          <span style={{
-            background: "#d1fae5", color: "#059669",
-            fontSize: "0.75rem", fontWeight: 700,
-            padding: "0.2rem 0.65rem", borderRadius: 999,
-          }}>
-            ✓ Dominado
-          </span>
-        )}
+      <header className="tutor-header">
+        <button className="tutor-back-btn" onClick={() => navigate("/ruta")}>←</button>
+        <span className="tutor-titulo">{contexto?.nombre || nodeId}</span>
+        {dominado && <span className="tutor-dominado-badge">✓ Dominado</span>}
       </header>
 
       {/* Body */}
-      <div style={{ flex: 1, display: "flex", maxWidth: 1200, margin: "0 auto", width: "100%", padding: "1.25rem 1rem", gap: "1.25rem" }}>
+      <div className="tutor-body">
 
         {/* ── Left column (30%) ── */}
-        <div style={{ width: "30%", minWidth: 240, display: "flex", flexDirection: "column", gap: "1rem" }}>
+        <div className="tutor-col-izq">
 
           {/* Dominio */}
-          <div style={{ background: "#fff", borderRadius: 12, padding: "1rem 1.25rem", boxShadow: "0 1px 4px rgba(0,0,0,.07)" }}>
+          <div className="tutor-card">
             <BarraDominio p={pDominio} />
           </div>
 
           {/* Definición */}
           {chunkDef && (
-            <div style={{ background: "#fff", borderRadius: 12, padding: "1rem 1.25rem", boxShadow: "0 1px 4px rgba(0,0,0,.07)" }}>
-              <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>
-                Definición
-              </div>
-              <p style={{ fontSize: "0.88rem", color: "#374151", lineHeight: 1.6, margin: 0 }}>
-                {chunkDef.contenido}
-              </p>
+            <div className="tutor-card">
+              <div className="tutor-card-label">Definición</div>
+              <Markdown className="tutor-card-body">{chunkDef.contenido}</Markdown>
             </div>
           )}
 
@@ -288,127 +222,60 @@ export default function Tutor() {
             {chunkEjemplo && (
               <button
                 onClick={() => setChunkVisible(chunkVisible === "ejemplo" ? null : "ejemplo")}
-                style={{
-                  background: chunkVisible === "ejemplo" ? "#ede9fe" : "#fff",
-                  border: "1px solid #c4b5fd", borderRadius: 10,
-                  padding: "0.6rem 1rem", cursor: "pointer",
-                  fontWeight: 600, fontSize: "0.87rem", color: "#7c3aed",
-                  textAlign: "left",
-                }}
+                className={`tutor-toggle-btn ejemplo ${chunkVisible === "ejemplo" ? "abierto" : ""}`}
               >
                 {chunkVisible === "ejemplo" ? "▼" : "▶"} Ver ejemplo
               </button>
             )}
             {chunkVisible === "ejemplo" && chunkEjemplo && (
-              <div style={{
-                background: "#1e293b", color: "#e2e8f0", borderRadius: 10,
-                padding: "0.75rem 1rem", fontSize: "0.82rem",
-                fontFamily: "monospace", whiteSpace: "pre-wrap", lineHeight: 1.6,
-              }}>
-                {chunkEjemplo.contenido}
-              </div>
+              <Markdown className="tutor-codeblock">{chunkEjemplo.contenido}</Markdown>
             )}
 
             {chunkEjercicio && (
               <button
                 onClick={() => setChunkVisible(chunkVisible === "ejercicio" ? null : "ejercicio")}
-                style={{
-                  background: chunkVisible === "ejercicio" ? "#fef9c3" : "#fff",
-                  border: "1px solid #fde68a", borderRadius: 10,
-                  padding: "0.6rem 1rem", cursor: "pointer",
-                  fontWeight: 600, fontSize: "0.87rem", color: "#92400e",
-                  textAlign: "left",
-                }}
+                className={`tutor-toggle-btn ejercicio ${chunkVisible === "ejercicio" ? "abierto" : ""}`}
               >
                 {chunkVisible === "ejercicio" ? "▼" : "▶"} Ver ejercicio
               </button>
             )}
             {chunkVisible === "ejercicio" && chunkEjercicio && (
-              <div style={{
-                background: "#fffbeb", borderRadius: 10, border: "1px solid #fde68a",
-                padding: "0.75rem 1rem", fontSize: "0.87rem", lineHeight: 1.6,
-              }}>
-                {chunkEjercicio.contenido}
-              </div>
+              <Markdown className="tutor-ejercicio-box">{chunkEjercicio.contenido}</Markdown>
             )}
           </div>
 
           {/* Volver */}
-          <button
-            onClick={() => navigate("/ruta")}
-            style={{
-              marginTop: "auto", padding: "0.65rem",
-              background: "none", border: "1px solid #e2e8f0", borderRadius: 10,
-              color: "#6b7280", cursor: "pointer", fontWeight: 600, fontSize: "0.87rem",
-            }}
-          >
-            ← Volver a la ruta
-          </button>
+          <button className="tutor-volver-btn" onClick={() => navigate("/ruta")}>← Volver a la ruta</button>
         </div>
 
         {/* ── Right column (70%) ── */}
-        <div style={{
-          flex: 1, background: "#fff", borderRadius: 14,
-          boxShadow: "0 1px 6px rgba(0,0,0,.08)",
-          display: "flex", flexDirection: "column", overflow: "hidden",
-        }}>
+        <div className="tutor-col-der">
           {/* Chat messages */}
-          <div style={{ flex: 1, overflowY: "auto", padding: "1.25rem 1.25rem 0.5rem" }}>
+          <div className="tutor-chat-msgs">
             {cargandoInit ? (
-              <div style={{ textAlign: "center", color: "#9ca3af", padding: "3rem" }}>
-                Cargando tutor...
-              </div>
+              <div className="tutor-chat-loading">Cargando tutor...</div>
             ) : (
               mensajes.map(msg => <BurbujaTutor key={msg.id} msg={msg} />)
             )}
             {escribiendo && (
               <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 12 }}>
-                <div style={{
-                  background: "#f1f5f9", border: "1px solid #e2e8f0",
-                  borderRadius: "18px 18px 18px 4px",
-                  padding: "0.65rem 1rem", fontSize: "0.88rem", color: "#9ca3af",
-                  fontStyle: "italic",
-                }}>
-                  El tutor está escribiendo...
-                </div>
+                <div className="tutor-typing">El tutor está escribiendo...</div>
               </div>
             )}
             <div ref={chatEndRef} />
           </div>
 
           {/* Input */}
-          <div style={{
-            borderTop: "1px solid #e2e8f0",
-            padding: "0.85rem 1.25rem",
-            display: "flex", gap: "0.6rem", alignItems: "flex-end",
-          }}>
+          <div className="tutor-inputrow">
             <textarea
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Escribe tu respuesta o pregunta..."
               rows={2}
-              style={{
-                flex: 1, resize: "none", border: "1.5px solid #e2e8f0",
-                borderRadius: 10, padding: "0.6rem 0.85rem",
-                fontSize: "0.9rem", outline: "none", fontFamily: "inherit",
-                lineHeight: 1.5,
-              }}
-              onFocus={e => e.target.style.borderColor = "#6366f1"}
-              onBlur={e => e.target.style.borderColor = "#e2e8f0"}
+              className="tutor-textarea"
             />
-            <button
-              onClick={handleEnviar}
-              disabled={!input.trim() || escribiendo}
-              style={{
-                background: (!input.trim() || escribiendo) ? "#e5e7eb" : "#6366f1",
-                color: (!input.trim() || escribiendo) ? "#9ca3af" : "#fff",
-                border: "none", borderRadius: 10,
-                padding: "0.65rem 1.25rem",
-                fontWeight: 700, cursor: (!input.trim() || escribiendo) ? "not-allowed" : "pointer",
-                fontSize: "0.9rem", whiteSpace: "nowrap",
-              }}
-            >
+            <button className="tutor-enviar-btn" onClick={handleEnviar} disabled={!input.trim() || escribiendo}>
               Enviar
             </button>
           </div>

@@ -4,8 +4,12 @@ import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { API } from "../config";
 import ChatBurbuja from "../components/ChatBurbuja";
+import Icon from "../components/Icon";
+import Markdown from "../components/Markdown";
+import "../auth.css";
 
 const PASOS = ["Definición", "Ejemplo", "Ejercicio", "Quiz"];
+const PASO_COLOR = ["var(--accent)", "#8B5CF6", "#F59E0B", "var(--accent-2)"];
 
 export default function TemaEstudio() {
   const { nodeId } = useParams();
@@ -121,64 +125,38 @@ export default function TemaEstudio() {
   };
 
   if (cargando) {
-    return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f8fafc" }}>
-        <p style={{ color: "#9ca3af" }}>Cargando tema...</p>
-      </div>
-    );
+    return <div className="tema-loading">Cargando tema...</div>;
   }
 
   if (!contenido) {
-    return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f8fafc" }}>
-        <p style={{ color: "#ef4444" }}>No se pudo cargar el tema.</p>
-      </div>
-    );
+    return <div className="tema-error">No se pudo cargar el tema.</div>;
   }
 
   const enQuiz = paso === 3;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f8fafc", display: "flex", flexDirection: "column" }}>
+    <div className="tema-page">
       {/* Header */}
-      <header style={{
-        background: "#fff", borderBottom: "1px solid #e2e8f0",
-        padding: "1rem 2rem", display: "flex", alignItems: "center", gap: "1rem",
-        position: "sticky", top: 0, zIndex: 50,
-      }}>
-        <button
-          onClick={() => navigate("/ruta")}
-          style={{ background: "none", border: "none", cursor: "pointer", fontSize: "1.4rem", color: "#6366f1", padding: 4 }}
-        >
-          ←
-        </button>
+      <header className="tema-header">
+        <button className="tema-back-btn" onClick={() => navigate("/ruta")}>←</button>
         <div style={{ flex: 1 }}>
-          <h1 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 700, color: "#1e293b" }}>
-            {contenido.nombre}
-          </h1>
-          {contenido.dominado && (
-            <span style={{ fontSize: "0.75rem", color: "#10b981", fontWeight: 600 }}>✓ Dominado</span>
-          )}
+          <h1 className="tema-titulo">{contenido.nombre}</h1>
+          {contenido.dominado && <span className="tema-dominado-tag">✓ Dominado</span>}
         </div>
       </header>
 
       {/* Barra de pasos */}
-      <div style={{ background: "#fff", borderBottom: "1px solid #f1f5f9", padding: "0.75rem 2rem" }}>
-        <div style={{ maxWidth: 680, margin: "0 auto", display: "flex", gap: "0.5rem" }}>
+      <div className="tema-steps-bar">
+        <div className="tema-steps-row">
           {PASOS.map((nombre, i) => {
             const activo = paso === i;
             const completado = paso > i;
+            const puedeIr = i <= paso + 1;
             return (
               <button
                 key={i}
-                onClick={() => i < paso || i === paso + 1 ? irAlPaso(i) : null}
-                style={{
-                  flex: 1, padding: "0.4rem 0", borderRadius: 8, border: "none",
-                  fontSize: "0.8rem", fontWeight: 600, cursor: i <= paso + 1 ? "pointer" : "default",
-                  background: activo ? "#6366f1" : completado ? "#d1fae5" : "#f1f5f9",
-                  color: activo ? "#fff" : completado ? "#059669" : "#9ca3af",
-                  transition: "all 0.15s",
-                }}
+                onClick={() => (i < paso || i === paso + 1 ? irAlPaso(i) : null)}
+                className={`tema-step-btn ${activo ? "active" : completado ? "done" : ""} ${puedeIr ? "clickable" : ""}`}
               >
                 {completado && !activo ? "✓ " : `${i + 1}. `}{nombre}
               </button>
@@ -188,19 +166,19 @@ export default function TemaEstudio() {
       </div>
 
       {/* Contenido */}
-      <div style={{ flex: 1, maxWidth: 680, margin: "2rem auto", padding: "0 1rem", width: "100%" }}>
+      <div className="tema-content">
 
         {/* PASO 0: Definición */}
         {paso === 0 && (
           <div>
-            <Tarjeta titulo="Definición" color="#6366f1">
+            <Tarjeta titulo="Definición" color={PASO_COLOR[0]}>
               {contenido.definicion
-                ? <p style={{ whiteSpace: "pre-wrap", lineHeight: 1.7 }}>{contenido.definicion.contenido}</p>
-                : <p style={{ color: "#9ca3af" }}>No hay definición disponible para este tema.</p>
+                ? <Markdown>{contenido.definicion.contenido}</Markdown>
+                : <p className="tema-card-empty">No hay definición disponible para este tema.</p>
               }
             </Tarjeta>
-            <div style={{ textAlign: "right", marginTop: "1.5rem" }}>
-              <BotonSiguiente onClick={() => irAlPaso(1)} label="Ver ejemplo →" />
+            <div className="tema-actions-right">
+              <button className="tema-btn-siguiente" onClick={() => irAlPaso(1)}>Ver ejemplo →</button>
             </div>
           </div>
         )}
@@ -208,15 +186,15 @@ export default function TemaEstudio() {
         {/* PASO 1: Ejemplo */}
         {paso === 1 && (
           <div>
-            <Tarjeta titulo="Ejemplo resuelto" color="#8b5cf6">
+            <Tarjeta titulo="Ejemplo resuelto" color={PASO_COLOR[1]}>
               {contenido.ejemplo
-                ? <p style={{ whiteSpace: "pre-wrap", lineHeight: 1.7 }}>{contenido.ejemplo.contenido}</p>
-                : <p style={{ color: "#9ca3af" }}>No hay ejemplo disponible para este tema.</p>
+                ? <Markdown>{contenido.ejemplo.contenido}</Markdown>
+                : <p className="tema-card-empty">No hay ejemplo disponible para este tema.</p>
               }
             </Tarjeta>
-            <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1.5rem" }}>
-              <BotonSecundario onClick={() => setPaso(0)} label="← Volver" />
-              <BotonSiguiente onClick={() => irAlPaso(2)} label="Ir al ejercicio →" />
+            <div className="tema-actions-row">
+              <button className="tema-btn-secundario" onClick={() => setPaso(0)}>← Volver</button>
+              <button className="tema-btn-siguiente" onClick={() => irAlPaso(2)}>Ir al ejercicio →</button>
             </div>
           </div>
         )}
@@ -224,38 +202,27 @@ export default function TemaEstudio() {
         {/* PASO 2: Ejercicio */}
         {paso === 2 && (
           <div>
-            <Tarjeta titulo="Ejercicio" color="#f59e0b">
+            <Tarjeta titulo="Ejercicio" color={PASO_COLOR[2]}>
               {contenido.enunciado
-                ? <p style={{ whiteSpace: "pre-wrap", lineHeight: 1.7 }}>{contenido.enunciado.contenido}</p>
-                : <p style={{ color: "#9ca3af" }}>No hay ejercicio disponible para este tema.</p>
+                ? <Markdown>{contenido.enunciado.contenido}</Markdown>
+                : <p className="tema-card-empty">No hay ejercicio disponible para este tema.</p>
               }
             </Tarjeta>
 
             <div style={{ marginTop: "1.25rem" }}>
-              <label style={{ display: "block", fontWeight: 600, color: "#374151", marginBottom: "0.5rem", fontSize: "0.9rem" }}>
-                Tu respuesta
-              </label>
+              <label className="tema-label">Tu respuesta</label>
               <textarea
                 value={respuestaEjercicio}
                 onChange={(e) => setRespuestaEjercicio(e.target.value)}
                 placeholder="Escribe tu respuesta aquí..."
                 rows={5}
-                style={{
-                  width: "100%", borderRadius: 10, border: "1.5px solid #e2e8f0",
-                  padding: "0.75rem", fontSize: "0.9rem", resize: "vertical",
-                  outline: "none", fontFamily: "inherit", boxSizing: "border-box",
-                }}
+                className="tema-textarea"
               />
-              <div style={{ textAlign: "right", marginTop: "0.5rem" }}>
+              <div className="tema-actions-right" style={{ marginTop: "0.5rem" }}>
                 <button
                   onClick={evaluarEjercicio}
                   disabled={!respuestaEjercicio.trim() || evaluandoEjercicio}
-                  style={{
-                    background: "#f59e0b", color: "#fff", border: "none",
-                    borderRadius: 8, padding: "0.55rem 1.25rem",
-                    fontSize: "0.9rem", fontWeight: 600, cursor: "pointer",
-                    opacity: !respuestaEjercicio.trim() || evaluandoEjercicio ? 0.5 : 1,
-                  }}
+                  className="tema-btn-eval ejercicio"
                 >
                   {evaluandoEjercicio ? "Evaluando..." : "Evaluar respuesta"}
                 </button>
@@ -263,20 +230,14 @@ export default function TemaEstudio() {
             </div>
 
             {feedbackEjercicio && (
-              <div style={{
-                marginTop: "1rem", padding: "1rem 1.25rem", borderRadius: 10,
-                background: feedbackEjercicio.correcto ? "#f0fdf4" : "#fff7ed",
-                border: `1px solid ${feedbackEjercicio.correcto ? "#bbf7d0" : "#fed7aa"}`,
-              }}>
-                <p style={{ margin: 0, lineHeight: 1.6, fontSize: "0.9rem", color: "#374151" }}>
-                  {feedbackEjercicio.feedback}
-                </p>
+              <div className={`tema-feedback ${feedbackEjercicio.correcto ? "ok" : "mal"}`}>
+                <Markdown>{feedbackEjercicio.feedback}</Markdown>
               </div>
             )}
 
-            <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1.5rem" }}>
-              <BotonSecundario onClick={() => setPaso(1)} label="← Volver" />
-              <BotonSiguiente onClick={() => irAlPaso(3)} label="Ir al quiz →" />
+            <div className="tema-actions-row">
+              <button className="tema-btn-secundario" onClick={() => setPaso(1)}>← Volver</button>
+              <button className="tema-btn-siguiente" onClick={() => irAlPaso(3)}>Ir al quiz →</button>
             </div>
           </div>
         )}
@@ -284,42 +245,31 @@ export default function TemaEstudio() {
         {/* PASO 3: Quiz */}
         {paso === 3 && (
           <div>
-            <Tarjeta titulo="Quiz final" color="#10b981">
+            <Tarjeta titulo="Quiz final" color={PASO_COLOR[3]}>
               {generandoQuiz ? (
-                <p style={{ color: "#9ca3af", textAlign: "center" }}>Generando pregunta...</p>
+                <p className="tema-card-empty" style={{ textAlign: "center" }}>Generando pregunta...</p>
               ) : preguntaQuiz ? (
-                <p style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, fontWeight: 500 }}>{preguntaQuiz}</p>
+                <Markdown style={{ fontWeight: 500 }}>{preguntaQuiz}</Markdown>
               ) : (
-                <p style={{ color: "#9ca3af" }}>No se pudo generar la pregunta.</p>
+                <p className="tema-card-empty">No se pudo generar la pregunta.</p>
               )}
             </Tarjeta>
 
             {!aprobado && preguntaQuiz && !feedbackQuiz && (
               <div style={{ marginTop: "1.25rem" }}>
-                <label style={{ display: "block", fontWeight: 600, color: "#374151", marginBottom: "0.5rem", fontSize: "0.9rem" }}>
-                  Tu respuesta
-                </label>
+                <label className="tema-label">Tu respuesta</label>
                 <textarea
                   value={respuestaQuiz}
                   onChange={(e) => setRespuestaQuiz(e.target.value)}
                   placeholder="Responde con tus propias palabras..."
                   rows={4}
-                  style={{
-                    width: "100%", borderRadius: 10, border: "1.5px solid #e2e8f0",
-                    padding: "0.75rem", fontSize: "0.9rem", resize: "vertical",
-                    outline: "none", fontFamily: "inherit", boxSizing: "border-box",
-                  }}
+                  className="tema-textarea"
                 />
-                <div style={{ textAlign: "right", marginTop: "0.5rem" }}>
+                <div className="tema-actions-right" style={{ marginTop: "0.5rem" }}>
                   <button
                     onClick={evaluarQuiz}
                     disabled={!respuestaQuiz.trim() || evaluandoQuiz}
-                    style={{
-                      background: "#10b981", color: "#fff", border: "none",
-                      borderRadius: 8, padding: "0.55rem 1.25rem",
-                      fontSize: "0.9rem", fontWeight: 600, cursor: "pointer",
-                      opacity: !respuestaQuiz.trim() || evaluandoQuiz ? 0.5 : 1,
-                    }}
+                    className="tema-btn-eval quiz"
                   >
                     {evaluandoQuiz ? "Evaluando..." : "Enviar respuesta"}
                   </button>
@@ -328,62 +278,32 @@ export default function TemaEstudio() {
             )}
 
             {feedbackQuiz && (
-              <div style={{
-                marginTop: "1rem", padding: "1.25rem",
-                borderRadius: 12, textAlign: "center",
-                background: aprobado ? "#f0fdf4" : "#fef2f2",
-                border: `1px solid ${aprobado ? "#bbf7d0" : "#fecaca"}`,
-              }}>
-                <p style={{ fontSize: "1.5rem", margin: "0 0 0.5rem" }}>{aprobado ? "🎉" : "💪"}</p>
-                <p style={{ fontWeight: 700, color: aprobado ? "#059669" : "#dc2626", marginBottom: "0.5rem" }}>
+              <div className={`tema-resultado ${aprobado ? "aprobado" : "no-aprobado"}`}>
+                <div className={`tema-resultado-icon ${aprobado ? "aprobado" : "no-aprobado"}`}>
+                  <Icon name={aprobado ? "trophy" : "target"} size={30} />
+                </div>
+                <p className={`tema-resultado-titulo ${aprobado ? "aprobado" : "no-aprobado"}`}>
                   {aprobado ? "¡Tema dominado!" : "Casi lo logras"}
                 </p>
-                <p style={{ color: "#374151", fontSize: "0.9rem", lineHeight: 1.6, margin: "0 0 1rem" }}>
-                  {feedbackQuiz}
-                </p>
+                <Markdown className="tema-resultado-msg">{feedbackQuiz}</Markdown>
                 {aprobado ? (
-                  <div style={{ display: "flex", gap: "0.75rem", justifyContent: "center", flexWrap: "wrap" }}>
-                    <button
-                      onClick={() => navigate("/ruta")}
-                      style={{
-                        background: "#e0e7ff", color: "#4338ca", border: "none",
-                        borderRadius: 8, padding: "0.5rem 1.25rem",
-                        fontSize: "0.9rem", fontWeight: 600, cursor: "pointer",
-                      }}
-                    >
-                      Volver a la ruta
-                    </button>
+                  <div className="tema-resultado-actions">
+                    <button className="tema-btn-ruta" onClick={() => navigate("/ruta")}>Volver a la ruta</button>
                     {nodeSiguiente && (
-                      <button
-                        onClick={() => navigate(`/estudio/${nodeSiguiente}`)}
-                        style={{
-                          background: "#6366f1", color: "#fff", border: "none",
-                          borderRadius: 8, padding: "0.5rem 1.25rem",
-                          fontSize: "0.9rem", fontWeight: 600, cursor: "pointer",
-                        }}
-                      >
+                      <button className="tema-btn-sig" onClick={() => navigate(`/estudio/${nodeSiguiente}`)}>
                         Siguiente tema →
                       </button>
                     )}
                   </div>
                 ) : (
-                  <button
-                    onClick={reintentar}
-                    style={{
-                      background: "#6366f1", color: "#fff", border: "none",
-                      borderRadius: 8, padding: "0.5rem 1.25rem",
-                      fontSize: "0.9rem", fontWeight: 600, cursor: "pointer",
-                    }}
-                  >
-                    Intentar de nuevo
-                  </button>
+                  <button className="tema-btn-retry" onClick={reintentar}>Intentar de nuevo</button>
                 )}
               </div>
             )}
 
             {!feedbackQuiz && (
               <div style={{ marginTop: "1.5rem" }}>
-                <BotonSecundario onClick={() => setPaso(2)} label="← Volver al ejercicio" />
+                <button className="tema-btn-secundario" onClick={() => setPaso(2)}>← Volver al ejercicio</button>
               </div>
             )}
           </div>
@@ -398,47 +318,13 @@ export default function TemaEstudio() {
 
 function Tarjeta({ titulo, color, children }) {
   return (
-    <div style={{
-      background: "#fff", borderRadius: 14,
-      boxShadow: "0 1px 6px rgba(0,0,0,.07)",
-      overflow: "hidden",
-    }}>
-      <div style={{ background: color, padding: "0.65rem 1.25rem" }}>
-        <span style={{ color: "#fff", fontWeight: 700, fontSize: "0.9rem" }}>{titulo}</span>
+    <div className="tema-card">
+      <div className="tema-card-head" style={{ background: color }}>
+        <span>{titulo}</span>
       </div>
-      <div style={{ padding: "1.25rem 1.5rem", color: "#374151", fontSize: "0.92rem" }}>
+      <div className="tema-card-body">
         {children}
       </div>
     </div>
-  );
-}
-
-function BotonSiguiente({ onClick, label }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        background: "#6366f1", color: "#fff", border: "none",
-        borderRadius: 8, padding: "0.55rem 1.4rem",
-        fontSize: "0.9rem", fontWeight: 600, cursor: "pointer",
-      }}
-    >
-      {label}
-    </button>
-  );
-}
-
-function BotonSecundario({ onClick, label }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        background: "#f1f5f9", color: "#374151", border: "none",
-        borderRadius: 8, padding: "0.55rem 1.1rem",
-        fontSize: "0.9rem", fontWeight: 600, cursor: "pointer",
-      }}
-    >
-      {label}
-    </button>
   );
 }

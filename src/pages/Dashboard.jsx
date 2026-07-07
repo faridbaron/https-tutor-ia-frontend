@@ -4,6 +4,7 @@ import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { API } from "../config";
 import LogicMindMark from "../components/LogicMindMark";
+import Icon from "../components/Icon";
 import "../auth.css";
 
 const NIVEL_COLOR = { BASICO: "#10b981", MEDIO: "#f59e0b", ALTO: "#6366f1" };
@@ -32,14 +33,14 @@ function HomeSection({ user, authHeader }) {
 
       <div className="dash-stats">
         <div className="stat-card">
-          <span className="stat-icon">📚</span>
+          <span className="stat-icon"><Icon name="book" size={22} style={{ color: "var(--accent)" }} /></span>
           <div className="stat-info">
             <span className="stat-label">Unidad actual</span>
             <span className="stat-value">Unidad {user.unidad_actual}</span>
           </div>
         </div>
         <div className="stat-card">
-          <span className="stat-icon">⭐</span>
+          <span className="stat-icon"><Icon name="star" size={22} style={{ color: "var(--accent)" }} /></span>
           <div className="stat-info">
             <span className="stat-label">Nivel</span>
             <span className="stat-value" style={{ color: NIVEL_COLOR[user.nivel_actual] }}>
@@ -48,7 +49,7 @@ function HomeSection({ user, authHeader }) {
           </div>
         </div>
         <div className="stat-card">
-          <span className="stat-icon">👤</span>
+          <span className="stat-icon"><Icon name="user" size={22} style={{ color: "var(--accent)" }} /></span>
           <div className="stat-info">
             <span className="stat-label">Alias</span>
             <span className="stat-value">@{user.username}</span>
@@ -58,7 +59,9 @@ function HomeSection({ user, authHeader }) {
 
       {/* Tarjeta diagnóstico */}
       <div className="dash-info-card" style={{ borderColor: "#c4b5fd" }}>
-        <h3>🧠 Evaluación Diagnóstica — Unidad 1</h3>
+        <h3 style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Icon name="node" size={18} style={{ color: "var(--accent)" }} /> Evaluación Diagnóstica — Unidad 1
+        </h3>
         {nivelEsDefault ? (
           <>
             <p>
@@ -85,11 +88,12 @@ function HomeSection({ user, authHeader }) {
             </button>
           </>
         ) : (
-          <p style={{ color: "#065f46" }}>
-            ✅ Evaluación completada. Tu nivel en la Unidad 1 es{" "}
+          <p style={{ color: "#065f46", display: "flex", alignItems: "flex-start", gap: 8 }}>
+            <Icon name="checkCircle" size={18} style={{ marginTop: 2 }} />
+            <span>Evaluación completada. Tu nivel en la Unidad 1 es{" "}
             <strong style={{ color: NIVEL_COLOR[user.nivel_actual] }}>
               {user.nivel_actual}
-            </strong>.
+            </strong>.</span>
           </p>
         )}
       </div>
@@ -100,8 +104,9 @@ function HomeSection({ user, authHeader }) {
           Este tutor inteligente te guiará en el aprendizaje de lógica y pensamiento
           computacional, adaptando el contenido a tu nivel y ritmo de aprendizaje.
         </p>
-        <div className="coming-soon">
-          🚀 Próximamente: sesiones de tutoría interactiva con IA
+        <div className="coming-soon" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Icon name="sparkles" size={16} />
+          Próximamente: sesiones de tutoría interactiva con IA
         </div>
       </div>
     </div>
@@ -225,7 +230,7 @@ function PipelineSection({ authHeader }) {
         />
         {pdfs.length === 0 ? (
           <>
-            <div className="pipe-drop-icon">📄</div>
+            <div className="pipe-drop-icon"><Icon name="upload" size={34} style={{ color: "var(--accent)" }} /></div>
             <p className="pipe-drop-text">Arrastra los PDFs aquí o haz clic para seleccionar</p>
             <span className="pipe-drop-hint">Puedes cargar múltiples libros</span>
           </>
@@ -233,7 +238,7 @@ function PipelineSection({ authHeader }) {
           <ul className="pipe-file-list">
             {pdfs.map((f, i) => (
               <li key={i}>
-                <span className="pipe-file-icon">📖</span>
+                <span className="pipe-file-icon"><Icon name="file" size={15} /></span>
                 <span className="pipe-file-name">{f.name}</span>
                 <span className="pipe-file-size">{(f.size / 1024 / 1024).toFixed(1)} MB</span>
               </li>
@@ -293,7 +298,7 @@ function PipelineSection({ authHeader }) {
       {resumen && (
         <div className="pipe-resumen">
           <div className="pipe-resumen-title">
-            <span className="pipe-resumen-check">✅</span> Ingesta completada
+            <span className="pipe-resumen-check"><Icon name="checkCircle" size={16} /></span> Ingesta completada
           </div>
           <div className="pipe-resumen-grid">
             {resumen.libros.map((l, i) => (
@@ -363,7 +368,9 @@ function DiagnosticoSection({ navigate, authHeader }) {
         return (
           <div key={u.id} className="dash-info-card" style={{ borderColor: "#c4b5fd" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-              <h3 style={{ margin: 0 }}>🧠 {u.titulo}</h3>
+              <h3 style={{ margin: 0, display: "flex", alignItems: "center", gap: 8 }}>
+                <Icon name="node" size={17} style={{ color: "var(--accent)" }} /> {u.titulo}
+              </h3>
               {p && (
                 <span style={{
                   fontSize: "0.78rem", fontWeight: 700, padding: "0.2rem 0.6rem",
