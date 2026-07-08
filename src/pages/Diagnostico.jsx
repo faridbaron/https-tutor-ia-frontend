@@ -316,20 +316,30 @@ export default function Diagnostico() {
   const [cargando, setCargando]   = useState(false);
   const [error, setError]         = useState(null);
   const [sesionActiva, setSesionActiva] = useState(false);
+  const [verificando, setVerificando] = useState(true);
 
-  // Verificar sesión activa al montar
+  // Al montar: si ya hay un resultado completado para esta unidad, mostrarlo
+  // directamente (no se permite repetir la evaluación). Si no, revisar si
+  // hay una sesión en progreso para poder reanudarla.
   useEffect(() => {
     axios
-      .get(`${API}/diagnostico/sesion-activa`, {
-        params: { unidad_id: unidadId },
-        headers: authHeader(),
-      })
+      .get(`${API}/diagnostico/resultado-unidad/${unidadId}`, { headers: authHeader() })
       .then(({ data }) => {
-        if (data.activa && data.sesion) {
-          setSesionActiva(true);
-        }
+        setResultado(data);
+        setFase("resultado");
       })
-      .catch(() => {});
+      .catch(() => {
+        axios
+          .get(`${API}/diagnostico/sesion-activa`, {
+            params: { unidad_id: unidadId },
+            headers: authHeader(),
+          })
+          .then(({ data }) => {
+            if (data.activa && data.sesion) setSesionActiva(true);
+          })
+          .catch(() => {});
+      })
+      .finally(() => setVerificando(false));
   }, [unidadId]);
 
   const reanudar = async () => {
@@ -426,7 +436,13 @@ export default function Diagnostico() {
         </div>
       )}
 
-      {fase === "intro" && (
+      {verificando && fase === "intro" && (
+        <div className="diag-page">
+          <div className="diag-card"><p>Cargando…</p></div>
+        </div>
+      )}
+
+      {!verificando && fase === "intro" && (
         <PantallaIntro
           onIniciar={iniciar}
           cargando={cargando}

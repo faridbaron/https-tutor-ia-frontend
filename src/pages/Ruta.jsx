@@ -33,6 +33,18 @@ export default function Ruta() {
   const [modalNodo, setModalNodo] = useState(null);
   const [prereqs, setPrereqs] = useState(null);
   const [cargandoModal, setCargandoModal] = useState(false);
+  const [estadosDiag, setEstadosDiag] = useState(null);
+
+  useEffect(() => {
+    axios
+      .get(`${API}/ruta/progreso-completo`, { headers: authHeader() })
+      .then(({ data }) => {
+        const mapa = {};
+        data.unidades.forEach((u) => { mapa[u.unidad_id] = u.diagnostico_estado; });
+        setEstadosDiag(mapa);
+      })
+      .catch(() => {});
+  }, []);
 
   const cargarUnidad = async (unidad_id) => {
     setCargando(true);
@@ -49,7 +61,12 @@ export default function Ruta() {
     }
   };
 
-  useEffect(() => { cargarUnidad(tabActiva); }, [tabActiva]);
+  const diagCompletado = estadosDiag?.[tabActiva] === "completado";
+
+  useEffect(() => {
+    if (estadosDiag === null) return; // aún no sabemos el estado, esperar
+    if (diagCompletado) cargarUnidad(tabActiva);
+  }, [tabActiva, estadosDiag]);
 
   const abrirModal = async (nodo) => {
     if (nodo.estado !== "bloqueado") return;
@@ -92,29 +109,39 @@ export default function Ruta() {
           ))}
         </div>
 
-        {/* Barra de progreso */}
-        {meta && (
-          <div className="ruta-progreso-card">
-            <div className="ruta-progreso-top">
-              <span className="ruta-progreso-nivel">
-                Nivel diagnóstico: <strong>{meta.nivel}</strong>
-              </span>
-              <span className="ruta-progreso-meta">
-                {meta.dominados}/{meta.total} dominados · {porcentaje}%
-              </span>
-            </div>
-            <div className="ruta-progreso-track">
-              <div className="ruta-progreso-fill" style={{ width: `${porcentaje}%` }} />
-            </div>
+        {/* Bloqueo: sin diagnóstico completado para esta unidad */}
+        {estadosDiag !== null && !diagCompletado ? (
+          <div className="ruta-estado-msg" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+            <p>Completa la evaluación diagnóstica de esta unidad para desbloquear tu ruta de aprendizaje.</p>
+            <button className="ruta-btn-empezar" onClick={() => navigate(`/diagnostico/${tabActiva}`)}>
+              Ir a la evaluación diagnóstica →
+            </button>
           </div>
-        )}
-
-        {/* Nodos */}
-        {cargando ? (
-          <div className="ruta-estado-msg">Cargando ruta...</div>
-        ) : nodos.length === 0 && meta ? (
-          <div className="ruta-estado-msg">No hay nodos disponibles para tu nivel actual.</div>
         ) : (
+          <>
+            {/* Barra de progreso */}
+            {meta && (
+              <div className="ruta-progreso-card">
+                <div className="ruta-progreso-top">
+                  <span className="ruta-progreso-nivel">
+                    Nivel diagnóstico: <strong>{meta.nivel}</strong>
+                  </span>
+                  <span className="ruta-progreso-meta">
+                    {meta.dominados}/{meta.total} dominados · {porcentaje}%
+                  </span>
+                </div>
+                <div className="ruta-progreso-track">
+                  <div className="ruta-progreso-fill" style={{ width: `${porcentaje}%` }} />
+                </div>
+              </div>
+            )}
+
+            {/* Nodos */}
+            {cargando ? (
+              <div className="ruta-estado-msg">Cargando ruta...</div>
+            ) : nodos.length === 0 && meta ? (
+              <div className="ruta-estado-msg">No hay nodos disponibles para tu nivel actual.</div>
+            ) : (
           <div className="ruta-nodos">
             {nodos.map((nodo) => (
               <div
@@ -162,6 +189,8 @@ export default function Ruta() {
               </div>
             ))}
           </div>
+            )}
+          </>
         )}
       </div>
 

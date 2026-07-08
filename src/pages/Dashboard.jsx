@@ -13,16 +13,14 @@ const ROL_LABEL   = { ADMIN: "Administrador", ESTUDIANTE: "Estudiante", PROFESOR
 /* ── Sección Inicio ─────────────────────────────────────────── */
 function HomeSection({ user, authHeader }) {
   const navigate = useNavigate();
-  const [diagInfo, setDiagInfo] = useState(null);
+  const [progreso, setProgreso] = useState(null);
 
   useEffect(() => {
     axios
-      .get(`${API}/diagnostico/sesion-activa`, { headers: authHeader() })
-      .then(({ data }) => setDiagInfo(data))
+      .get(`${API}/ruta/progreso-completo`, { headers: authHeader() })
+      .then(({ data }) => setProgreso(data.unidades))
       .catch(() => {});
   }, []);
-
-  const nivelEsDefault = user.nivel_actual === "BASICO" && !diagInfo?.activa;
 
   return (
     <div className="section-content">
@@ -31,72 +29,82 @@ function HomeSection({ user, authHeader }) {
         <p className="dash-welcome-sub">Bienvenido a tu panel de aprendizaje</p>
       </div>
 
-      <div className="dash-stats">
-        <div className="stat-card">
-          <span className="stat-icon"><Icon name="book" size={22} style={{ color: "var(--accent)" }} /></span>
-          <div className="stat-info">
-            <span className="stat-label">Unidad actual</span>
-            <span className="stat-value">Unidad {user.unidad_actual}</span>
-          </div>
-        </div>
-        <div className="stat-card">
-          <span className="stat-icon"><Icon name="star" size={22} style={{ color: "var(--accent)" }} /></span>
-          <div className="stat-info">
-            <span className="stat-label">Nivel</span>
-            <span className="stat-value" style={{ color: NIVEL_COLOR[user.nivel_actual] }}>
-              {user.nivel_actual}
-            </span>
-          </div>
-        </div>
-        <div className="stat-card">
-          <span className="stat-icon"><Icon name="user" size={22} style={{ color: "var(--accent)" }} /></span>
-          <div className="stat-info">
-            <span className="stat-label">Alias</span>
-            <span className="stat-value">@{user.username}</span>
-          </div>
-        </div>
-      </div>
+      {UNIDADES_INFO.map((u, i) => {
+        const p = progreso?.[i];
+        const estadoDiag = p?.diagnostico_estado || "no_iniciado";
+        const rutaCompleta = !!p && p.total_nodos > 0 && p.nodos_dominados === p.total_nodos;
+        const pct = p && p.total_nodos > 0 ? Math.round((p.nodos_dominados / p.total_nodos) * 100) : 0;
 
-      {/* Tarjeta diagnóstico */}
-      <div className="dash-info-card" style={{ borderColor: "#c4b5fd" }}>
-        <h3 style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Icon name="node" size={18} style={{ color: "var(--accent)" }} /> Evaluación Diagnóstica — Unidad 1
-        </h3>
-        {nivelEsDefault ? (
-          <>
-            <p>
-              Antes de comenzar, completa la evaluación diagnóstica para que el tutor
-              conozca tu nivel de partida en pensamiento computacional.
+        return (
+          <div key={u.id} className="dash-info-card" style={{ borderColor: "#c4b5fd" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <h3 style={{ margin: 0, display: "flex", alignItems: "center", gap: 8 }}>
+                <Icon name="node" size={18} style={{ color: "var(--accent)" }} /> {u.titulo}
+              </h3>
+              {estadoDiag === "completado" && (
+                <span style={{
+                  fontSize: "0.78rem", fontWeight: 700, padding: "0.2rem 0.6rem",
+                  borderRadius: 999, background: "#ede9fe", color: NIVEL_COLOR[p.nivel_diagnostico],
+                  whiteSpace: "nowrap",
+                }}>
+                  {p.nivel_diagnostico}
+                </span>
+              )}
+            </div>
+            <p style={{ marginBottom: 4 }}>{u.descripcion}</p>
+            <p style={{ fontSize: "0.85rem", color: "#6b7280", marginBottom: 10 }}>
+              {u.kcs} dominios · 12–{u.kcs * 4} preguntas adaptativas
             </p>
-            <button
-              className="auth-btn"
-              style={{ marginTop: 0 }}
-              onClick={() => navigate("/diagnostico/unidad_1")}
-            >
-              Iniciar evaluación diagnóstica →
-            </button>
-          </>
-        ) : diagInfo?.activa ? (
-          <>
-            <p>Tienes una evaluación en progreso. Puedes reanudarla ahora.</p>
-            <button
-              className="auth-btn"
-              style={{ marginTop: 0 }}
-              onClick={() => navigate("/diagnostico/unidad_1")}
-            >
-              Continuar evaluación →
-            </button>
-          </>
-        ) : (
-          <p style={{ color: "#065f46", display: "flex", alignItems: "flex-start", gap: 8 }}>
-            <Icon name="checkCircle" size={18} style={{ marginTop: 2 }} />
-            <span>Evaluación completada. Tu nivel en la Unidad 1 es{" "}
-            <strong style={{ color: NIVEL_COLOR[user.nivel_actual] }}>
-              {user.nivel_actual}
-            </strong>.</span>
-          </p>
-        )}
-      </div>
+
+            {estadoDiag !== "completado" && (
+              <>
+                <p>
+                  {estadoDiag === "en_progreso"
+                    ? "Tienes una evaluación en progreso. Puedes reanudarla ahora."
+                    : "Completa la evaluación diagnóstica para conocer tu nivel de partida en esta unidad."}
+                </p>
+                <button
+                  className="auth-btn"
+                  style={{ marginTop: 0 }}
+                  onClick={() => navigate(`/diagnostico/${u.id}`)}
+                >
+                  {estadoDiag === "en_progreso" ? "Continuar evaluación →" : "Iniciar prueba diagnóstica →"}
+                </button>
+              </>
+            )}
+
+            {estadoDiag === "completado" && rutaCompleta && (
+              <p style={{ color: "#065f46", display: "flex", alignItems: "center", gap: 8 }}>
+                <Icon name="checkCircle" size={18} /> Ruta de aprendizaje completada
+              </p>
+            )}
+
+            {estadoDiag === "completado" && p && !rutaCompleta && (
+              <>
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem", color: "#6b7280", marginBottom: 4 }}>
+                    <span>Progreso en la ruta</span>
+                    <span>{p.nodos_dominados}/{p.total_nodos} nodos · {pct}%</span>
+                  </div>
+                  <div style={{ background: "#e5e7eb", borderRadius: 999, height: 6, overflow: "hidden" }}>
+                    <div style={{ width: `${pct}%`, background: "#10b981", height: "100%", borderRadius: 999, transition: "width 0.4s" }} />
+                  </div>
+                </div>
+                <button
+                  style={{
+                    marginTop: 0, padding: "0.6rem 1rem",
+                    background: "#ede9fe", color: "#6366f1", border: "none",
+                    borderRadius: 10, fontWeight: 700, cursor: "pointer", fontSize: "0.9rem",
+                  }}
+                  onClick={() => navigate("/ruta")}
+                >
+                  Continuar ruta →
+                </button>
+              </>
+            )}
+          </div>
+        );
+      })}
 
       <div className="dash-info-card">
         <h3>Sobre el tutor</h3>
@@ -104,10 +112,6 @@ function HomeSection({ user, authHeader }) {
           Este tutor inteligente te guiará en el aprendizaje de lógica y pensamiento
           computacional, adaptando el contenido a tu nivel y ritmo de aprendizaje.
         </p>
-        <div className="coming-soon" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Icon name="sparkles" size={16} />
-          Próximamente: sesiones de tutoría interactiva con IA
-        </div>
       </div>
     </div>
   );
@@ -322,7 +326,7 @@ function PipelineSection({ authHeader }) {
   );
 }
 
-/* ── Sección Diagnóstico (enlace) ───────────────────────────── */
+/* ── Info de unidades (usada en Inicio) ──────────────────────── */
 const UNIDADES_INFO = [
   {
     id: "unidad_1",
@@ -344,87 +348,9 @@ const UNIDADES_INFO = [
   },
 ];
 
-function DiagnosticoSection({ navigate, authHeader }) {
-  const [progreso, setProgreso] = useState(null);
-
-  useEffect(() => {
-    axios
-      .get(`${API}/ruta/progreso-completo`, { headers: authHeader() })
-      .then(({ data }) => setProgreso(data.unidades))
-      .catch(() => {});
-  }, []);
-
-  return (
-    <div className="section-content">
-      <div className="dash-welcome">
-        <h2>Diagnóstico Adaptativo</h2>
-        <p className="dash-welcome-sub">
-          Evaluaciones de 12–20 preguntas adaptativas con algoritmo BKT
-        </p>
-      </div>
-      {UNIDADES_INFO.map((u, i) => {
-        const p = progreso?.[i];
-        const pct = p && p.total_nodos > 0 ? Math.round((p.nodos_dominados / p.total_nodos) * 100) : 0;
-        return (
-          <div key={u.id} className="dash-info-card" style={{ borderColor: "#c4b5fd" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-              <h3 style={{ margin: 0, display: "flex", alignItems: "center", gap: 8 }}>
-                <Icon name="node" size={17} style={{ color: "var(--accent)" }} /> {u.titulo}
-              </h3>
-              {p && (
-                <span style={{
-                  fontSize: "0.78rem", fontWeight: 700, padding: "0.2rem 0.6rem",
-                  borderRadius: 999, background: "#ede9fe", color: "#6366f1",
-                }}>
-                  {p.nivel_diagnostico}
-                </span>
-              )}
-            </div>
-            <p style={{ marginBottom: 8 }}>{u.descripcion}</p>
-            <p style={{ fontSize: "0.85rem", color: "#6b7280", marginBottom: p ? 10 : 0 }}>
-              {u.kcs} dominios · 12–{u.kcs * 4} preguntas adaptativas
-            </p>
-            {p && (
-              <div style={{ marginBottom: 12 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem", color: "#6b7280", marginBottom: 4 }}>
-                  <span>Progreso en la ruta</span>
-                  <span>{p.nodos_dominados}/{p.total_nodos} nodos · {pct}%</span>
-                </div>
-                <div style={{ background: "#e5e7eb", borderRadius: 999, height: 6, overflow: "hidden" }}>
-                  <div style={{ width: `${pct}%`, background: "#10b981", height: "100%", borderRadius: 999, transition: "width 0.4s" }} />
-                </div>
-              </div>
-            )}
-            <div style={{ display: "flex", gap: "0.5rem" }}>
-              <button
-                className="auth-btn"
-                style={{ marginTop: 0, flex: 1 }}
-                onClick={() => navigate(`/diagnostico/${u.id}`)}
-              >
-                Ir a la evaluación →
-              </button>
-              <button
-                style={{
-                  marginTop: 0, flex: 1, padding: "0.6rem",
-                  background: "#ede9fe", color: "#6366f1", border: "none",
-                  borderRadius: 10, fontWeight: 700, cursor: "pointer", fontSize: "0.9rem",
-                }}
-                onClick={() => navigate("/ruta")}
-              >
-                Ver ruta →
-              </button>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
 /* ── Dashboard principal ───────────────────────────────────── */
 const MENU = [
   { id: "home",        label: "Inicio",                roles: ["ADMIN","ESTUDIANTE","PROFESOR"] },
-  { id: "diagnostico", label: "Diagnóstico",           roles: ["ESTUDIANTE","PROFESOR"] },
   { id: "ruta",        label: "Ruta de aprendizaje",   roles: ["ESTUDIANTE","PROFESOR"] },
   { id: "ingesta",     label: "Ingesta de documentos", roles: ["ADMIN"] },
 ];
@@ -479,9 +405,8 @@ export default function Dashboard() {
       {/* ── Contenido principal ── */}
       <div className="dash-body">
         <div className="dash-content">
-          {section === "home"        && <HomeSection user={user} authHeader={authHeader} />}
-          {section === "diagnostico" && <DiagnosticoSection navigate={navigate} authHeader={authHeader} />}
-          {section === "ingesta"     && <PipelineSection authHeader={authHeader} />}
+          {section === "home"    && <HomeSection user={user} authHeader={authHeader} />}
+          {section === "ingesta" && <PipelineSection authHeader={authHeader} />}
         </div>
       </div>
     </div>
