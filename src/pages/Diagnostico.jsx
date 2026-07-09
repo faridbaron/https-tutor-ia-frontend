@@ -4,6 +4,7 @@ import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { API } from "../config";
 import Icon from "../components/Icon";
+import Markdown from "../components/Markdown";
 import "../auth.css";
 
 const KC_NOMBRES = {
@@ -149,7 +150,7 @@ function TarjetaPregunta({ pregunta, progreso, onResponder, cargando }) {
         </div>
 
         {/* Enunciado */}
-        <p className="diag-enunciado">{pregunta.enunciado}</p>
+        <Markdown className="diag-enunciado">{pregunta.enunciado}</Markdown>
 
         {/* Opciones */}
         <div className="diag-opciones">
@@ -170,7 +171,7 @@ function TarjetaPregunta({ pregunta, progreso, onResponder, cargando }) {
                 disabled={confirmada}
               >
                 <span className="diag-opcion-letra">{letra}</span>
-                <span className="diag-opcion-texto">{op.replace(/^[A-Da-d][).]?\s*/, "")}</span>
+                <Markdown className="diag-opcion-texto">{op.replace(/^[A-Da-d][).]?\s*/, "")}</Markdown>
               </button>
             );
           })}
@@ -183,7 +184,7 @@ function TarjetaPregunta({ pregunta, progreso, onResponder, cargando }) {
               <Icon name={resultado.correcto ? "checkCircle" : "xCircle"} size={18} />
               {resultado.correcto ? "¡Correcto!" : "Incorrecto"}
             </div>
-            <p className="diag-feedback-exp">{resultado.explicacion}</p>
+            <Markdown className="diag-feedback-exp">{resultado.explicacion}</Markdown>
             <div className="diag-p-barra-wrap">
               <span className="diag-p-label">Nivel de dominio</span>
               <div className="diag-p-barra">
