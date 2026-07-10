@@ -67,11 +67,9 @@ export default function Tutor() {
   const navigate    = useNavigate();
   const { authHeader } = useAuth();
 
-  // Left column state
   const [contexto,    setContexto]    = useState(null);
-  const [chunkVisible, setChunkVisible] = useState(null); // "ejemplo" | "ejercicio"
 
-  // Right column state
+  // Chat state
   const [mensajes,    setMensajes]    = useState([]);
   const [input,       setInput]       = useState("");
   const [escribiendo, setEscribiendo] = useState(false);
@@ -171,9 +169,6 @@ export default function Tutor() {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleEnviar(); }
   };
 
-  const chunkEjemplo = contexto?.chunks?.find(c => c.tipo === "ejemplo_resuelto");
-  const chunkEjercicio = contexto?.chunks?.find(c => c.tipo === "enunciado");
-
   return (
     <div className="tutor-page">
       {/* Header */}
@@ -183,44 +178,8 @@ export default function Tutor() {
         {dominado && <span className="tutor-dominado-badge">✓ Dominado</span>}
       </header>
 
-      {/* Body */}
+      {/* Body: chat a pantalla completa */}
       <div className="tutor-body">
-
-        {/* ── Left column (30%) ── */}
-        <div className="tutor-col-izq">
-
-          {/* Botones ejemplo / ejercicio */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-            {chunkEjemplo && (
-              <button
-                onClick={() => setChunkVisible(chunkVisible === "ejemplo" ? null : "ejemplo")}
-                className={`tutor-toggle-btn ejemplo ${chunkVisible === "ejemplo" ? "abierto" : ""}`}
-              >
-                {chunkVisible === "ejemplo" ? "▼" : "▶"} Ver ejemplo
-              </button>
-            )}
-            {chunkVisible === "ejemplo" && chunkEjemplo && (
-              <Markdown className="tutor-codeblock">{chunkEjemplo.contenido}</Markdown>
-            )}
-
-            {chunkEjercicio && (
-              <button
-                onClick={() => setChunkVisible(chunkVisible === "ejercicio" ? null : "ejercicio")}
-                className={`tutor-toggle-btn ejercicio ${chunkVisible === "ejercicio" ? "abierto" : ""}`}
-              >
-                {chunkVisible === "ejercicio" ? "▼" : "▶"} Ver ejercicio
-              </button>
-            )}
-            {chunkVisible === "ejercicio" && chunkEjercicio && (
-              <Markdown className="tutor-ejercicio-box">{chunkEjercicio.contenido}</Markdown>
-            )}
-          </div>
-
-          {/* Volver */}
-          <button className="tutor-volver-btn" onClick={() => navigate("/ruta")}>← Volver a la ruta</button>
-        </div>
-
-        {/* ── Right column (70%) ── */}
         <div className="tutor-col-der">
           {/* Chat messages */}
           <div className="tutor-chat-msgs">
