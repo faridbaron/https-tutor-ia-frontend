@@ -74,9 +74,14 @@ function HomeSection({ user, authHeader }) {
             )}
 
             {estadoDiag === "completado" && rutaCompleta && (
-              <p style={{ color: "#065f46", display: "flex", alignItems: "center", gap: 8 }}>
-                <Icon name="checkCircle" size={18} /> Ruta de aprendizaje completada
-              </p>
+              <>
+                <p style={{ color: "#065f46", display: "flex", alignItems: "center", gap: 8 }}>
+                  <Icon name="checkCircle" size={18} /> Ruta de aprendizaje completada
+                </p>
+                <button className="btn-ghost" onClick={() => navigate(`/diagnostico/${u.id}`)}>
+                  Ver resultado del diagnóstico →
+                </button>
+              </>
             )}
 
             {estadoDiag === "completado" && p && !rutaCompleta && (
@@ -90,16 +95,21 @@ function HomeSection({ user, authHeader }) {
                     <div style={{ width: `${pct}%`, background: "#10b981", height: "100%", borderRadius: 999, transition: "width 0.4s" }} />
                   </div>
                 </div>
-                <button
-                  style={{
-                    marginTop: 0, padding: "0.6rem 1rem",
-                    background: "#ede9fe", color: "#6366f1", border: "none",
-                    borderRadius: 10, fontWeight: 700, cursor: "pointer", fontSize: "0.9rem",
-                  }}
-                  onClick={() => navigate("/ruta")}
-                >
-                  Continuar ruta →
-                </button>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                  <button
+                    style={{
+                      marginTop: 0, padding: "0.6rem 1rem",
+                      background: "#ede9fe", color: "#6366f1", border: "none",
+                      borderRadius: 10, fontWeight: 700, cursor: "pointer", fontSize: "0.9rem",
+                    }}
+                    onClick={() => navigate("/ruta")}
+                  >
+                    Continuar ruta →
+                  </button>
+                  <button className="btn-ghost" onClick={() => navigate(`/diagnostico/${u.id}`)}>
+                    Ver resultado del diagnóstico →
+                  </button>
+                </div>
               </>
             )}
           </div>
