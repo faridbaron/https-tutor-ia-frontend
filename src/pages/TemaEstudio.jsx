@@ -3,6 +3,7 @@ import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { API } from "../config";
+import AppHeader from "../components/AppHeader";
 import ChatBurbuja from "../components/ChatBurbuja";
 import Icon from "../components/Icon";
 import Markdown from "../components/Markdown";
@@ -132,17 +133,28 @@ export default function TemaEstudio() {
   };
 
   if (cargando) {
-    return <div className="tema-loading">Cargando tema...</div>;
+    return (
+      <>
+        <AppHeader />
+        <div className="tema-loading">Cargando tema...</div>
+      </>
+    );
   }
 
   if (!contenido) {
-    return <div className="tema-error">No se pudo cargar el tema.</div>;
+    return (
+      <>
+        <AppHeader />
+        <div className="tema-error">No se pudo cargar el tema.</div>
+      </>
+    );
   }
 
   const enQuiz = paso === 3;
 
   return (
     <div className="tema-page">
+      <AppHeader />
       {/* Header */}
       <header className="tema-header">
         <button className="tema-back-btn" onClick={() => navigate("/ruta")}>←</button>

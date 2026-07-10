@@ -456,6 +456,10 @@
   padding: 32px 16px 60px;
   gap: 20px;
 }
+.diag-page > .dash-header {
+  align-self: stretch;
+  margin: -32px -16px 0;
+}
 
 .diag-card {
   background: var(--surface);
@@ -592,7 +596,6 @@
 .ruta-header {
   background: var(--surface); border-bottom: 1px solid var(--line);
   padding: 1rem 2rem; display: flex; align-items: center; gap: 1rem;
-  position: sticky; top: 0; z-index: 100;
 }
 .ruta-back-btn { background: none; border: none; cursor: pointer; font-size: 1.4rem; color: var(--accent); padding: 4px; }
 .ruta-title { font-size: 1.2rem; }
@@ -658,7 +661,7 @@
 .tema-loading { min-height: 100vh; display: flex; align-items: center; justify-content: center; color: var(--ink-faint); }
 .tema-error   { min-height: 100vh; display: flex; align-items: center; justify-content: center; color: #DC2626; }
 
-.tema-header    { background: var(--surface); border-bottom: 1px solid var(--line); padding: 1rem 2rem; display: flex; align-items: center; gap: 1rem; position: sticky; top: 0; z-index: 50; }
+.tema-header    { background: var(--surface); border-bottom: 1px solid var(--line); padding: 1rem 2rem; display: flex; align-items: center; gap: 1rem; }
 .tema-back-btn  { background: none; border: none; cursor: pointer; font-size: 1.4rem; color: var(--accent); padding: 4px; }
 .tema-titulo    { font-size: 1.1rem; }
 .tema-dominado-tag { font-size: 0.75rem; color: var(--accent-2); font-weight: 600; }
@@ -778,7 +781,6 @@
 .tutor-header {
   background: var(--surface); border-bottom: 1px solid var(--line);
   padding: 0.75rem 1.5rem; display: flex; align-items: center; gap: 1rem;
-  position: sticky; top: 0; z-index: 100;
 }
 .tutor-back-btn { background: none; border: none; cursor: pointer; font-size: 1.3rem; color: var(--accent); }
 .tutor-titulo { font-weight: 700; color: var(--ink); font-size: 1rem; }

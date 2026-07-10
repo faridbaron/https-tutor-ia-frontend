@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { API } from "../config";
+import AppHeader from "../components/AppHeader";
 import Icon from "../components/Icon";
 import Markdown from "../components/Markdown";
 import "../auth.css";
@@ -171,6 +172,7 @@ export default function Tutor() {
 
   return (
     <div className="tutor-page">
+      <AppHeader />
       {/* Header */}
       <header className="tutor-header">
         <button className="tutor-back-btn" onClick={() => navigate("/ruta")}>←</button>

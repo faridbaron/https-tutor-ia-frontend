@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { API } from "../config";
+import AppHeader from "../components/AppHeader";
 import Icon from "../components/Icon";
 import Markdown from "../components/Markdown";
 import "../auth.css";
@@ -39,6 +40,7 @@ const NIVEL_DOT   = { BASICO: "#10b981", MEDIO: "#f59e0b", ALTO: "#ef4444" };
 function PantallaIntro({ onIniciar, cargando, sesionActiva, onReanudar, unidadNombre }) {
   return (
     <div className="diag-page">
+      <AppHeader />
       <div className="diag-card">
         <div className="diag-card-header">
           <span className="diag-icon"><Icon name="node" size={38} style={{ color: "var(--accent)" }} /></span>
@@ -135,6 +137,7 @@ function TarjetaPregunta({ pregunta, progreso, onResponder, cargando }) {
 
   return (
     <div className="diag-page">
+      <AppHeader />
       <BarraProgreso progreso={progreso} />
       <div className="diag-card diag-card-pregunta">
         {/* Nivel e indicador */}
@@ -229,6 +232,7 @@ function PantallaResultado({ resultado, onDashboard }) {
 
   return (
     <div className="diag-page">
+      <AppHeader />
       <div className="diag-card">
         <div className="diag-resultado-header" style={{ background: NIVEL_BG[nivel] }}>
           <div className="diag-resultado-icon" style={{ color: NIVEL_COLOR[nivel] }}>
@@ -421,6 +425,7 @@ export default function Diagnostico() {
 
       {verificando && fase === "intro" && (
         <div className="diag-page">
+          <AppHeader />
           <div className="diag-card"><p>Cargando…</p></div>
         </div>
       )}

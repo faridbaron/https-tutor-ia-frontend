@@ -3,12 +3,11 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { API } from "../config";
-import LogicMindMark from "../components/LogicMindMark";
+import AppHeader from "../components/AppHeader";
 import Icon from "../components/Icon";
 import "../auth.css";
 
 const NIVEL_COLOR = { BASICO: "#10b981", MEDIO: "#f59e0b", ALTO: "#6366f1" };
-const ROL_LABEL   = { ADMIN: "Administrador", ESTUDIANTE: "Estudiante", PROFESOR: "Profesor" };
 
 /* ── Sección Inicio ─────────────────────────────────────────── */
 function HomeSection({ user, authHeader }) {
@@ -112,6 +111,14 @@ function HomeSection({ user, authHeader }) {
                 </div>
               </>
             )}
+
+            <button
+              className="btn-ghost"
+              style={{ marginTop: 10 }}
+              onClick={() => navigate(`/ruta?unidad=${u.id}`)}
+            >
+              Ir a ruta de aprendizaje →
+            </button>
           </div>
         );
       })}
@@ -366,38 +373,15 @@ const MENU = [
 ];
 
 export default function Dashboard() {
-  const { user, logout, authHeader } = useAuth();
+  const { user, authHeader } = useAuth();
   const navigate = useNavigate();
   const [section, setSection] = useState("home");
 
-  const handleLogout = () => { logout(); navigate("/login"); };
-
   const visibleMenu = MENU.filter((m) => m.roles.includes(user.rol));
-
-  const initials = user.nombre
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
 
   return (
     <div className="dash-root">
-      {/* ── Header ── */}
-      <header className="dash-header">
-        <div className="dash-brand">
-          <LogicMindMark size="sm" />
-          <span className="dash-brand-name">LogicMind</span>
-        </div>
-        <div className="dash-header-right">
-          <span className={`role-badge role-${user.rol.toLowerCase()}`}>
-            {ROL_LABEL[user.rol]}
-          </span>
-          <span className="dash-username">@{user.username}</span>
-          <div className="dash-avatar" title={user.nombre}>{initials}</div>
-          <button className="btn-ghost" onClick={handleLogout}>Cerrar sesión</button>
-        </div>
-      </header>
+      <AppHeader />
 
       {/* ── Tab navigation ── */}
       <nav className="dash-tabs">

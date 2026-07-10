@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { API } from "../config";
+import AppHeader from "../components/AppHeader";
 import "../auth.css";
 
 const ESTADO_COLOR = {
@@ -26,7 +27,10 @@ const TABS = [
 export default function Ruta() {
   const { authHeader } = useAuth();
   const navigate = useNavigate();
-  const [tabActiva, setTabActiva] = useState("unidad_1");
+  const [searchParams] = useSearchParams();
+  const [tabActiva, setTabActiva] = useState(
+    TABS.some((t) => t.id === searchParams.get("unidad")) ? searchParams.get("unidad") : "unidad_1"
+  );
   const [nodos, setNodos] = useState([]);
   const [meta, setMeta] = useState(null);
   const [cargando, setCargando] = useState(false);
@@ -89,6 +93,7 @@ export default function Ruta() {
 
   return (
     <div className="ruta-page">
+      <AppHeader />
       {/* Header */}
       <header className="ruta-header">
         <button className="ruta-back-btn" onClick={() => navigate("/dashboard")}>←</button>
