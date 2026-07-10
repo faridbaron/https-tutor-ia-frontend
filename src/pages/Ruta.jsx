@@ -174,12 +174,20 @@ export default function Ruta() {
                       </button>
                     )}
                     {nodo.estado === "dominado" && (
-                      <button
-                        className="ruta-btn-repasar"
-                        onClick={(e) => { e.stopPropagation(); navigate(`/tutor/${nodo.node_id}`); }}
-                      >
-                        Repasar
-                      </button>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <button
+                          className="ruta-btn-repasar"
+                          onClick={(e) => { e.stopPropagation(); navigate(`/estudio/${nodo.node_id}?repaso=1`); }}
+                        >
+                          Repasar
+                        </button>
+                        <button
+                          className="btn-ghost"
+                          onClick={(e) => { e.stopPropagation(); navigate(`/tutor/${nodo.node_id}`); }}
+                        >
+                          Preguntar algo
+                        </button>
+                      </div>
                     )}
                     {nodo.estado === "bloqueado" && (
                       <span className="ruta-nodo-prereq-hint">ver prereqs →</span>
