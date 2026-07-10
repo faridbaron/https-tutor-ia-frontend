@@ -112,13 +112,15 @@ function HomeSection({ user, authHeader }) {
               </>
             )}
 
-            <button
-              className="btn-ghost"
-              style={{ marginTop: 10 }}
-              onClick={() => navigate(`/ruta?unidad=${u.id}`)}
-            >
-              Ir a ruta de aprendizaje →
-            </button>
+            {!(estadoDiag === "completado" && p && !rutaCompleta) && (
+              <button
+                className="btn-ghost"
+                style={{ marginTop: 10 }}
+                onClick={() => navigate(`/ruta?unidad=${u.id}`)}
+              >
+                Ir a ruta de aprendizaje →
+              </button>
+            )}
           </div>
         );
       })}
