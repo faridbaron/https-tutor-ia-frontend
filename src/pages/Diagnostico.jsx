@@ -244,16 +244,13 @@ function PantallaResultado({ resultado, onDashboard }) {
           <p className="diag-resultado-msg">{resultado.mensaje}</p>
         </div>
 
-        <div className="diag-resultado-meta">
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-            <Icon name="list" size={15} /> {resultado.total_preguntas} preguntas respondidas
-          </span>
-          {resultado.tiempo_minutos && (
+        {resultado.tiempo_minutos && (
+          <div className="diag-resultado-meta">
             <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
               <Icon name="clock" size={15} /> {resultado.tiempo_minutos} minutos
             </span>
-          )}
-        </div>
+          </div>
+        )}
 
         <h3 className="diag-resultado-subtitulo">Resultado por dominio</h3>
         <div className="diag-resultado-grid">
@@ -271,21 +268,6 @@ function PantallaResultado({ resultado, onDashboard }) {
                   style={{ color: NIVEL_COLOR[d.nivel_confirmado] }}
                 >
                   {d.nivel_confirmado}
-                </div>
-                <div className="diag-kc-barra-wrap">
-                  <div className="diag-kc-barra">
-                    <div
-                      className="diag-kc-fill"
-                      style={{
-                        width: `${Math.round(d.p_dominio_final * 100)}%`,
-                        background: NIVEL_COLOR[d.nivel_confirmado],
-                      }}
-                    />
-                  </div>
-                  <span className="diag-kc-pct">{Math.round(d.p_dominio_final * 100)}%</span>
-                </div>
-                <div className="diag-kc-stats">
-                  {d.correctas}/{d.preguntas_respondidas} correctas
                 </div>
               </div>
             );
