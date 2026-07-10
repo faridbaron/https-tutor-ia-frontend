@@ -138,7 +138,12 @@ export default function Tutor() {
           tipo_respuesta: data.tipo_respuesta,
         },
       ]);
-      if (data.p_dominio >= 0.75 && !dominado) {
+      // Solo el mensaje enviado por el estudiante puede disparar la celebración.
+      // El mensaje "inicial" automático (addUserMsg=false) no cuenta: en ese
+      // punto `dominado` todavía puede no reflejar el valor recién cargado de
+      // la sesión (setDominado es async), lo que causaba una celebración
+      // falsa al entrar a un tema que ya estaba dominado.
+      if (addUserMsg && data.p_dominio >= 0.75 && !dominado) {
         setDominado(true);
         setSiguienteId(data.node_id_siguiente);
         setCelebrar(true);
