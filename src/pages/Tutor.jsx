@@ -40,22 +40,6 @@ function BurbujaTutor({ msg }) {
   );
 }
 
-function BarraDominio({ p }) {
-  const pct = Math.round(p * 100);
-  const color = p >= 0.75 ? "var(--accent-2)" : p >= 0.4 ? "#F59E0B" : "var(--accent)";
-  return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-        <span className="tutor-dominio-label">Dominio del tema</span>
-        <span className="tutor-dominio-pct" style={{ color }}>{pct}%</span>
-      </div>
-      <div className="tutor-dominio-track">
-        <div className="tutor-dominio-fill" style={{ width: `${pct}%`, background: color }} />
-      </div>
-    </div>
-  );
-}
-
 function Celebracion({ nombreTema, siguienteId, onSiguiente, onCerrar }) {
   return (
     <div className="tutor-celebra-overlay">
@@ -91,7 +75,6 @@ export default function Tutor() {
   const [mensajes,    setMensajes]    = useState([]);
   const [input,       setInput]       = useState("");
   const [escribiendo, setEscribiendo] = useState(false);
-  const [pDominio,    setPDominio]    = useState(0.0);
   const [dominado,    setDominado]    = useState(false);
   const [siguienteId, setSiguienteId] = useState(null);
   const [celebrar,    setCelebrar]    = useState(false);
@@ -115,8 +98,7 @@ export default function Tutor() {
         if (cancelled) return;
         setContexto(ctxRes.data);
         const sesion = sesRes.data;
-        setPDominio(sesion.p_dominio || 0);
-        setDominado(sesion.dominado  || false);
+        setDominado(sesion.dominado || false);
 
         if (sesion.historial && sesion.historial.length > 0) {
           // Resume existing session
@@ -156,7 +138,6 @@ export default function Tutor() {
           tipo_respuesta: data.tipo_respuesta,
         },
       ]);
-      setPDominio(data.p_dominio);
       if (data.p_dominio >= 0.75 && !dominado) {
         setDominado(true);
         setSiguienteId(data.node_id_siguiente);
@@ -185,7 +166,6 @@ export default function Tutor() {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleEnviar(); }
   };
 
-  const chunkDef     = contexto?.chunks?.find(c => c.tipo === "definicion");
   const chunkEjemplo = contexto?.chunks?.find(c => c.tipo === "ejemplo_resuelto");
   const chunkEjercicio = contexto?.chunks?.find(c => c.tipo === "enunciado");
 
@@ -203,19 +183,6 @@ export default function Tutor() {
 
         {/* ── Left column (30%) ── */}
         <div className="tutor-col-izq">
-
-          {/* Dominio */}
-          <div className="tutor-card">
-            <BarraDominio p={pDominio} />
-          </div>
-
-          {/* Definición */}
-          {chunkDef && (
-            <div className="tutor-card">
-              <div className="tutor-card-label">Definición</div>
-              <Markdown className="tutor-card-body">{chunkDef.contenido}</Markdown>
-            </div>
-          )}
 
           {/* Botones ejemplo / ejercicio */}
           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
