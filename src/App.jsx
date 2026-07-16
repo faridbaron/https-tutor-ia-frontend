@@ -6,7 +6,6 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Diagnostico from "./pages/Diagnostico";
 import Ruta from "./pages/Ruta";
-import Tutor from "./pages/Tutor";
 import TemaEstudio from "./pages/TemaEstudio";
 
 export default function App() {
@@ -46,14 +45,6 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <TemaEstudio />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/tutor/:nodeId"
-            element={
-              <ProtectedRoute>
-                <Tutor />
               </ProtectedRoute>
             }
           />

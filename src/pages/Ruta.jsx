@@ -4,6 +4,7 @@ import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { API } from "../config";
 import AppHeader from "../components/AppHeader";
+import ChatBurbuja from "../components/ChatBurbuja";
 import "../auth.css";
 
 const ESTADO_COLOR = {
@@ -179,20 +180,12 @@ export default function Ruta() {
                       </button>
                     )}
                     {nodo.estado === "dominado" && (
-                      <div style={{ display: "flex", gap: 6 }}>
-                        <button
-                          className="ruta-btn-repasar"
-                          onClick={(e) => { e.stopPropagation(); navigate(`/estudio/${nodo.node_id}?repaso=1`); }}
-                        >
-                          Repasar
-                        </button>
-                        <button
-                          className="btn-ghost"
-                          onClick={(e) => { e.stopPropagation(); navigate(`/tutor/${nodo.node_id}`); }}
-                        >
-                          Preguntar algo
-                        </button>
-                      </div>
+                      <button
+                        className="ruta-btn-repasar"
+                        onClick={(e) => { e.stopPropagation(); navigate(`/estudio/${nodo.node_id}?repaso=1`); }}
+                      >
+                        Repasar
+                      </button>
                     )}
                     {nodo.estado === "bloqueado" && (
                       <span className="ruta-nodo-prereq-hint">ver prereqs →</span>
@@ -206,6 +199,9 @@ export default function Ruta() {
           </>
         )}
       </div>
+
+      {/* Chat de la unidad: siempre disponible una vez desbloqueada la ruta */}
+      {diagCompletado && <ChatBurbuja key={tabActiva} unidadId={tabActiva} />}
 
       {/* Modal prereqs */}
       {modalNodo && (

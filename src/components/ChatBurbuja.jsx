@@ -5,13 +5,21 @@ import { API } from "../config";
 import Markdown from "./Markdown";
 import "../auth.css";
 
-export default function ChatBurbuja({ nodeId }) {
+export default function ChatBurbuja({ nodeId, unidadId }) {
   const { authHeader } = useAuth();
   const [abierto, setAbierto] = useState(false);
   const [mensajes, setMensajes] = useState([]);
   const [input, setInput] = useState("");
   const [escribiendo, setEscribiendo] = useState(false);
   const bottomRef = useRef(null);
+
+  const esUnidad = !!unidadId;
+  const endpoint = esUnidad ? "/estudio/chat-unidad" : "/estudio/chat-burbuja";
+  const idPayload = esUnidad ? { unidad_id: unidadId } : { node_id: nodeId };
+  const titulo = esUnidad ? "Pregunta sobre la unidad" : "Pregunta sobre el tema";
+  const textoVacio = esUnidad
+    ? "¿Tienes dudas sobre algún tema de esta unidad? Pregúntame."
+    : "¿Tienes dudas sobre este tema? Pregúntame.";
 
   useEffect(() => {
     if (abierto) bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -28,8 +36,8 @@ export default function ChatBurbuja({ nodeId }) {
 
     try {
       const { data } = await axios.post(
-        `${API}/estudio/chat-burbuja`,
-        { node_id: nodeId, mensaje: texto, historial },
+        `${API}${endpoint}`,
+        { ...idPayload, mensaje: texto, historial },
         { headers: authHeader() }
       );
       setMensajes((prev) => [...prev, { rol: "assistant", contenido: data.respuesta }]);
@@ -47,14 +55,14 @@ export default function ChatBurbuja({ nodeId }) {
         <div className="chatb-panel">
           {/* Header */}
           <div className="chatb-header">
-            <span>Pregunta sobre el tema</span>
+            <span>{titulo}</span>
             <button className="chatb-close" onClick={() => setAbierto(false)}>×</button>
           </div>
 
           {/* Mensajes */}
           <div className="chatb-messages">
             {mensajes.length === 0 && (
-              <p className="chatb-empty">¿Tienes dudas sobre este tema? Pregúntame.</p>
+              <p className="chatb-empty">{textoVacio}</p>
             )}
             {mensajes.map((m, i) => (
               <div key={i} className={`chatb-bubble ${m.rol === "user" ? "user" : "assistant"}`}>
@@ -82,7 +90,7 @@ export default function ChatBurbuja({ nodeId }) {
       )}
 
       {/* Botón flotante */}
-      <button className="chatb-fab" onClick={() => setAbierto((v) => !v)} title="Preguntar sobre el tema">
+      <button className="chatb-fab" onClick={() => setAbierto((v) => !v)} title={titulo}>
         {abierto ? "×" : "?"}
       </button>
     </>
