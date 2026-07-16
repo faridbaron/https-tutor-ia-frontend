@@ -188,19 +188,6 @@ function TarjetaPregunta({ pregunta, progreso, onResponder, cargando }) {
               {resultado.correcto ? "¡Correcto!" : "Incorrecto"}
             </div>
             <Markdown className="diag-feedback-exp">{resultado.explicacion}</Markdown>
-            <div className="diag-p-barra-wrap">
-              <span className="diag-p-label">Nivel de dominio</span>
-              <div className="diag-p-barra">
-                <div
-                  className="diag-p-fill"
-                  style={{
-                    width: `${Math.round(resultado.p_dominio_actual * 100)}%`,
-                    background: resultado.p_dominio_actual >= 0.75 ? "#10b981" : "#6366f1",
-                  }}
-                />
-              </div>
-              <span className="diag-p-valor">{Math.round(resultado.p_dominio_actual * 100)}%</span>
-            </div>
             <button
               className="auth-btn diag-btn-sig"
               onClick={() => resultado.onSiguiente()}
