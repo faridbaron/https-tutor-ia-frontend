@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import LogicMindMark from "../components/LogicMindMark";
+import Icon from "../components/Icon";
 import "../auth.css";
 
 export default function Register() {
@@ -10,6 +11,7 @@ export default function Register() {
   const [form, setForm] = useState({ nombre: "", username: "", password: "", confirm: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [registrado, setRegistrado] = useState(false);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -31,13 +33,35 @@ export default function Register() {
     setLoading(true);
     try {
       await register(form.nombre, form.username, form.password);
-      navigate("/login");
+      setRegistrado(true);
     } catch (err) {
       setError(err.response?.data?.detail || "Error al registrarse");
     } finally {
       setLoading(false);
     }
   };
+
+  if (registrado) {
+    return (
+      <div className="auth-page">
+        <div className="auth-card">
+          <div className="auth-logo">
+            <LogicMindMark size="sm" />
+            <h1 className="auth-title">LogicMind</h1>
+          </div>
+
+          <div className="auth-success">
+            <Icon name="checkCircle" size={20} />
+            <span>¡Tu cuenta ha sido creada exitosamente!</span>
+          </div>
+
+          <button className="auth-btn" onClick={() => navigate("/login")}>
+            Iniciar sesión
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="auth-page">
