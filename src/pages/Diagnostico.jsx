@@ -80,7 +80,8 @@ function PantallaIntro({ onIniciar, cargando, sesionActiva, onReanudar, unidadNo
         <button
           className="auth-btn diag-btn-iniciar"
           onClick={onIniciar}
-          disabled={cargando}
+          disabled={cargando || sesionActiva}
+          title={sesionActiva ? "Termina o reanuda tu evaluación en progreso antes de empezar una nueva." : undefined}
         >
           {cargando ? "Iniciando…" : sesionActiva ? "Nueva evaluación" : "Iniciar evaluación"}
         </button>

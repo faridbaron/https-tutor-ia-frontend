@@ -101,7 +101,7 @@ function HomeSection({ user, authHeader }) {
                       background: "#ede9fe", color: "#6366f1", border: "none",
                       borderRadius: 10, fontWeight: 700, cursor: "pointer", fontSize: "0.9rem",
                     }}
-                    onClick={() => navigate("/ruta")}
+                    onClick={() => navigate(`/ruta?unidad=${u.id}`)}
                   >
                     Continuar ruta →
                   </button>

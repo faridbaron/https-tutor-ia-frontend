@@ -157,7 +157,7 @@ export default function TemaEstudio() {
       <AppHeader />
       {/* Header */}
       <header className="tema-header">
-        <button className="tema-back-btn" onClick={() => navigate("/ruta")}>←</button>
+        <button className="tema-back-btn" onClick={() => navigate(`/ruta?unidad=${contenido.unidad_id}`)}>←</button>
         <div style={{ flex: 1 }}>
           <h1 className="tema-titulo">{contenido.nombre}</h1>
           {contenido.dominado && <span className="tema-dominado-tag">✓ Dominado</span>}
@@ -307,7 +307,7 @@ export default function TemaEstudio() {
                 <Markdown className="tema-resultado-msg">{feedbackQuiz}</Markdown>
                 {aprobado ? (
                   <div className="tema-resultado-actions">
-                    <button className="tema-btn-ruta" onClick={() => navigate("/ruta")}>Volver a la ruta</button>
+                    <button className="tema-btn-ruta" onClick={() => navigate(`/ruta?unidad=${contenido.unidad_id}`)}>Volver a la ruta</button>
                     {nodeSiguiente && (
                       <button className="tema-btn-sig" onClick={() => navigate(`/estudio/${nodeSiguiente}`)}>
                         Siguiente tema →
