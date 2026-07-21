@@ -25,6 +25,19 @@ export default function ChatBurbuja({ nodeId, unidadId }) {
     if (abierto) bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [mensajes, abierto]);
 
+  useEffect(() => {
+    const ambitoId = esUnidad ? unidadId : nodeId;
+    if (!ambitoId) return;
+    axios
+      .get(`${API}/estudio/chat-historial`, {
+        params: { node_id: ambitoId },
+        headers: authHeader(),
+      })
+      .then(({ data }) => setMensajes(data))
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nodeId, unidadId]);
+
   const enviar = async () => {
     const texto = input.trim();
     if (!texto || escribiendo) return;
