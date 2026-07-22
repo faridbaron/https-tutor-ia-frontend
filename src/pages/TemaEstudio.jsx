@@ -88,12 +88,12 @@ export default function TemaEstudio() {
     }
   };
 
-  const generarQuiz = async () => {
+  const generarQuiz = async (excluirPregunta = null) => {
     setGenerandoQuiz(true);
     try {
       const { data } = await axios.post(
         `${API}/estudio/generar-quiz`,
-        { node_id: nodeId },
+        { node_id: nodeId, excluir_pregunta: excluirPregunta },
         { headers: authHeader() }
       );
       setPreguntaQuiz(data.pregunta);
@@ -125,11 +125,12 @@ export default function TemaEstudio() {
   };
 
   const reintentar = () => {
+    const preguntaAnterior = preguntaQuiz;
     setRespuestaQuiz("");
     setFeedbackQuiz(null);
     setAprobado(false);
     setPreguntaQuiz(null);
-    generarQuiz();
+    generarQuiz(preguntaAnterior);
   };
 
   if (cargando) {
