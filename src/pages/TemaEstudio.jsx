@@ -43,6 +43,15 @@ export default function TemaEstudio() {
 
   const cargarContenido = async () => {
     setCargando(true);
+    // Limpiar estado del tema anterior (el componente se reutiliza al navegar
+    // entre /estudio/:nodeId sin desmontarse)
+    setRespuestaEjercicio("");
+    setFeedbackEjercicio(null);
+    setPreguntaQuiz(null);
+    setRespuestaQuiz("");
+    setFeedbackQuiz(null);
+    setAprobado(false);
+    setNodeSiguiente(null);
     try {
       const { data } = await axios.get(`${API}/estudio/contenido/${nodeId}`, { headers: authHeader() });
       setContenido(data);
