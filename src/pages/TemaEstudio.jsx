@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { API } from "../config";
@@ -16,8 +16,6 @@ export default function TemaEstudio() {
   const { nodeId } = useParams();
   const { authHeader } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const repaso = searchParams.get("repaso") === "1";
 
   const [contenido, setContenido] = useState(null);
   const [cargando, setCargando] = useState(true);
@@ -55,12 +53,7 @@ export default function TemaEstudio() {
     try {
       const { data } = await axios.get(`${API}/estudio/contenido/${nodeId}`, { headers: authHeader() });
       setContenido(data);
-      if (repaso) {
-        setPaso(3); // repaso rápido: va directo al quiz de autoevaluación
-        generarQuiz();
-      } else {
-        setPaso(0); // siempre arranca en definición
-      }
+      setPaso(0); // siempre arranca en definición (incluido el repaso)
     } catch (e) {
       console.error("Error cargando contenido:", e);
     } finally {

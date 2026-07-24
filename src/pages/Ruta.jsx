@@ -182,7 +182,7 @@ export default function Ruta() {
                     {nodo.estado === "dominado" && (
                       <button
                         className="ruta-btn-repasar"
-                        onClick={(e) => { e.stopPropagation(); navigate(`/estudio/${nodo.node_id}?repaso=1`); }}
+                        onClick={(e) => { e.stopPropagation(); navigate(`/estudio/${nodo.node_id}`); }}
                       >
                         Repasar
                       </button>
