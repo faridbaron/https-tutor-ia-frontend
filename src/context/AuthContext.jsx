@@ -18,6 +18,20 @@ export function AuthProvider({ children }) {
       .finally(() => setLoading(false));
   }, []);
 
+  // El token vive en localStorage, que es compartido por todas las pestañas del
+  // mismo navegador. Si en otra pestaña se inicia/cierra sesión (o se entra con
+  // otro usuario), esta pestaña quedaría mostrando datos del usuario anterior.
+  // Escuchamos el evento `storage` (que solo se dispara en las OTRAS pestañas) y
+  // recargamos para resincronizar toda la sesión con la actual.
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (e.key !== "token" || e.oldValue === e.newValue) return;
+      window.location.reload();
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
   const login = async (username, password) => {
     const { data } = await axios.post(`${API}/auth/login`, { username, password });
     localStorage.setItem("token", data.access_token);
