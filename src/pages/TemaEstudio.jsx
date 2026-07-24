@@ -39,6 +39,12 @@ export default function TemaEstudio() {
     cargarContenido();
   }, [nodeId]);
 
+  // Al cambiar de tema o de paso, volver arriba (la ruta /estudio/:nodeId no
+  // remonta el componente, así que el scroll se quedaría en la posición anterior).
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [nodeId, paso]);
+
   const cargarContenido = async () => {
     setCargando(true);
     // Limpiar estado del tema anterior (el componente se reutiliza al navegar
